@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js';
+import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=3';
 
 const PAGE_SIZE = 20;
 const slug = location.pathname.split('/')[2] ?? '';

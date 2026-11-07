@@ -35,7 +35,7 @@ Tests: `npm test` (Node's built-in test runner, no dependencies).
 - CSP, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy` are set in `netlify.toml` for every path. There is no inline script, style or `style=""` in the markup.
 - API data is rendered with `textContent` and `createElement` only. Links are created only for `https://` URLs, with `rel="noopener noreferrer"`.
 - The proxy allows only GET, only the paths in `ALLOWED_PATH`, and only the query params `q`, `page`, `limit`, `time_window`, `difficulty`, `topic`. It never returns upstream headers except `Retry-After`.
-- Static assets are cached for a week rather than a year, because file names have no content hash.
+- JS and CSS are revalidated on every load (`max-age=0, must-revalidate`, so unchanged files cost a 304) and are linked as `?v=N`. File names have no content hash, so a long cache could leave a browser with a new `home.js` and an old `common.js`. Bump `N` in the HTML and in the `common.js` imports when a script changes.
 - `.env` files are git-ignored; commit only `.env.example`.
 
 ## Traffic
