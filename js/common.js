@@ -18,7 +18,7 @@ export class ApiError extends Error {
   }
 }
 
-const SAVED_PREFIX = 'lurivo:';
+const SAVED_PREFIX = 'interviewsyntax:';
 const MAX_SAVED_CHARS = 300_000;
 const MAX_SAVED_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 

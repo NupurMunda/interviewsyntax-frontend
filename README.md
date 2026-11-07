@@ -1,4 +1,4 @@
-# Lurivo
+# InterviewSyntax
 
 Interview intelligence, made simple.
 

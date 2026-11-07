@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=3';
+import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=4';
 
 const PAGE_SIZE = 20;
 const slug = location.pathname.split('/')[2] ?? '';
@@ -258,7 +258,7 @@ function profileCard(profile) {
 }
 
 function render(company) {
-  document.title = `${company.name} · Lurivo`;
+  document.title = `${company.name} · InterviewSyntax`;
   const back = el('a', 'back', '← All companies');
   back.href = '/';
   root.replaceChildren(back, el('h1', null, company.name), profileCard(company.profile));
