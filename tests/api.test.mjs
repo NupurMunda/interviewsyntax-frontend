@@ -173,3 +173,18 @@ describe('responses', () => {
     assert.equal(res.headers.get('Retry-After'), '42');
   });
 });
+
+describe('interview prep routes', () => {
+  it('forwards the two prep sections with a topic filter, and nothing else under /prep', async () => {
+    for (const section of ['ai', 'system-design']) {
+      const res = await get(`/api/v1/prep/${section}?topic=Agents&page=2&limit=50&evil=1`);
+      assert.equal(res.status, 200, section);
+      const url = new URL(calls.at(-1).url);
+      assert.equal(url.pathname, `/v1/prep/${section}`);
+      assert.deepEqual([...url.searchParams.keys()].sort(), ['limit', 'page', 'topic']);
+    }
+    calls.length = 0;
+    for (const path of ['/api/v1/prep', '/api/v1/prep/behavioral', '/api/v1/prep/ai/extra']) assert.equal((await get(path)).status, 404, path);
+    assert.equal(calls.length, 0);
+  });
+});

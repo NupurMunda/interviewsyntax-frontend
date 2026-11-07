@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=4';
+import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=14';
 
 const PAGE_SIZE = 20;
 const slug = location.pathname.split('/')[2] ?? '';
@@ -152,10 +152,13 @@ function hldPanel(host) {
         for (const row of rows) {
           const li = el('li');
           li.append(el('strong', null, row.title));
+          if (row.summary) li.append(el('p', 'muted qsum', row.summary));
+          // Our own collected links come first; the older matched solutions are only a fallback.
+          const found = row.links.length ? row.links.map((l) => ({ url: l.url, title: l.label })) : row.solutions;
           const solutions = el('div', 'chips');
-          if (row.solutions.length) {
+          if (found.length) {
             solutions.append(el('span', 'mono muted', 'Solutions'));
-            for (const s of row.solutions) solutions.append(link(s.url, s.title, 'chip'));
+            for (const s of found) solutions.append(link(s.url, s.title, 'chip'));
           } else {
             solutions.append(el('span', 'mono muted', 'No solution links yet'));
           }
@@ -177,7 +180,18 @@ function aiPanel(host) {
       return (rows) => {
         for (const row of rows) {
           const li = el('li');
-          li.append(link(row.url, row.title));
+          if (row.has_answer) {
+            // Our written answer, not the original source page.
+            const anchor = el('a', null, row.title);
+            anchor.href = `/q/${row.id}`;
+            li.append(anchor, el('span', 'badge', 'Answer'));
+          } else {
+            li.append(el('span', null, row.title));
+            const more = el('div', 'chips');
+            more.append(el('span', 'muted small', 'No written answer yet'));
+            if (row.url) more.append(link(row.url, 'Original question', 'chip'));
+            li.append(more);
+          }
           if (row.topics.length) li.append(chips(row.topics));
           ul.append(li);
         }

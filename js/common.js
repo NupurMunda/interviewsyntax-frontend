@@ -8,6 +8,17 @@ export function el(tag, className, text) {
   return node;
 }
 
+// Answers mark key terms as **bold** and *italic*. Built with createElement and text nodes only, so nothing is parsed as HTML.
+export function richText(parent, text) {
+  for (const part of text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/)) {
+    if (!part) continue;
+    if (part.startsWith('**')) parent.append(el('strong', null, part.slice(2, -2)));
+    else if (part.startsWith('*')) parent.append(el('em', null, part.slice(1, -1)));
+    else parent.append(part);
+  }
+  return parent;
+}
+
 export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export class ApiError extends Error {
@@ -116,6 +127,27 @@ export function safeUrl(value) {
     return new URL(value).href;
   } catch {
     return null;
+  }
+}
+
+const RECENT_DAYS = 14;
+
+// "written" is a YYYY-MM-DD date. Answers published in the last two weeks are flagged as new.
+export function isRecent(written, now = Date.now()) {
+  const time = Date.parse(`${written}T00:00:00`);
+  return Number.isFinite(time) && now - time >= 0 && now - time <= RECENT_DAYS * 86_400_000;
+}
+
+export function formatDay(written) {
+  const date = new Date(`${written}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? written : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Marks the nav link for the section being viewed.
+export function markNav(href) {
+  for (const a of document.querySelectorAll('.nav a')) {
+    if (a.getAttribute('href') === href) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
   }
 }
 

@@ -111,3 +111,60 @@ describe('tracking', () => {
     assert.deepEqual(urls, []);
   });
 });
+
+describe('rich text', () => {
+  const node = (tag) => ({ tag, children: [], className: '', textContent: '', append(...kids) { this.children.push(...kids); } });
+  const describeTree = (n) => (typeof n === 'string' ? n : `${n.tag}(${n.textContent || n.children.map(describeTree).join('')})`);
+
+  it('turns **bold** and *italic* into elements and leaves the rest as text', async () => {
+    const { richText } = await import('../js/common.js');
+    const realCreate = globalThis.document.createElement;
+    globalThis.document.createElement = node;
+    try {
+      const out = richText(node('p'), 'Use a **token bucket** for *bursts*, not a fixed window.');
+      assert.equal(out.children.map(describeTree).join('|'), 'Use a |strong(token bucket)| for |em(bursts)|, not a fixed window.');
+    } finally {
+      globalThis.document.createElement = realCreate;
+    }
+  });
+
+  it('never parses markup: tags stay plain text', async () => {
+    const { richText } = await import('../js/common.js');
+    const realCreate = globalThis.document.createElement;
+    globalThis.document.createElement = node;
+    try {
+      const out = richText(node('p'), '<img src=x onerror=alert(1)> and **<b>bold</b>**');
+      assert.equal(out.children.map(describeTree).join('|'), '<img src=x onerror=alert(1)> and |strong(<b>bold</b>)');
+    } finally {
+      globalThis.document.createElement = realCreate;
+    }
+  });
+});
+
+describe('nav highlight', () => {
+  it('marks only the link for the current section', async () => {
+    const { markNav } = await import('../js/common.js');
+    const anchor = (href) => ({ attrs: { href }, getAttribute(n) { return this.attrs[n]; }, setAttribute(n, v) { this.attrs[n] = v; }, removeAttribute(n) { delete this.attrs[n]; } });
+    const links = [anchor('/'), anchor('/prep/ai'), anchor('/prep/system-design')];
+    links[0].attrs['aria-current'] = 'page';
+    const real = globalThis.document.querySelectorAll;
+    globalThis.document.querySelectorAll = () => links;
+    try {
+      markNav('/prep/ai');
+      assert.deepEqual(links.map((a) => a.attrs['aria-current']), [undefined, 'page', undefined]);
+    } finally {
+      globalThis.document.querySelectorAll = real;
+    }
+  });
+});
+
+describe('new badge', () => {
+  it('flags only answers from the last two weeks as new', async () => {
+    const { isRecent } = await import('../js/common.js');
+    const now = Date.parse('2026-11-20T12:00:00');
+    assert.equal(isRecent('2026-11-08', now), true);
+    assert.equal(isRecent('2026-11-05', now), false);
+    assert.equal(isRecent('2026-11-25', now), false);
+    assert.equal(isRecent('garbage', now), false);
+  });
+});

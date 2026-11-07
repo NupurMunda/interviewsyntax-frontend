@@ -1,4 +1,4 @@
-const ALLOWED_PATH = /^\/api\/v1\/(health|graph|companies|companies\/[a-z0-9-]+(\/(dsa|hld|ai|behavioral))?|resources\/[0-9]+|sources|ping)$/;
+const ALLOWED_PATH = /^\/api\/v1\/(health|graph|companies|companies\/[a-z0-9-]+(\/(dsa|hld|ai|behavioral))?|resources\/[0-9]+|prep\/(ai|system-design)|sources|ping)$/;
 const FORWARDED_PARAMS = ['q', 'page', 'limit', 'time_window', 'difficulty', 'topic', 'kind', 'company', 'category', 'status'];
 const TIMEOUT_MS = 8000;
 

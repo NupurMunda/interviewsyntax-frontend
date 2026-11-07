@@ -8,6 +8,16 @@
   status = 200
 
 [[redirects]]
+  from = "/prep/*"
+  to = "/prep.html"
+  status = 200
+
+[[redirects]]
+  from = "/q/*"
+  to = "/question.html"
+  status = 200
+
+[[redirects]]
   from = "/sources"
   to = "/sources.html"
   status = 200
@@ -61,6 +71,12 @@
   status = 404
   force = true
 
+[[redirects]]
+  from = "/ARCHITECTURE.md"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -71,6 +87,11 @@
 
 [[headers]]
   for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/img/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
