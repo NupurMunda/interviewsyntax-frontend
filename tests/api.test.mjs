@@ -159,7 +159,7 @@ describe('responses', () => {
   it('sets cache headers on 200 only', async () => {
     const ok = await get('/api/v1/companies');
     assert.equal(ok.headers.get('Cache-Control'), 'public, max-age=300');
-    assert.equal(ok.headers.get('Netlify-CDN-Cache-Control'), 'public, durable, s-maxage=86400, stale-while-revalidate=604800');
+    assert.equal(ok.headers.get('Netlify-CDN-Cache-Control'), 'public, durable, s-maxage=300, stale-while-revalidate=600');
     reply = () => Response.json({ error: { code: 'bad_request', message: 'x' } }, { status: 400 });
     const bad = await get('/api/v1/companies?page=0');
     assert.equal(bad.status, 400);

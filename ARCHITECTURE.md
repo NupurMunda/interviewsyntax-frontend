@@ -42,13 +42,13 @@ The site is **read-only**. Nothing a visitor does changes the data. All data cha
 | Layer | Rule | Why |
 |---|---|---|
 | Browser, API responses | `max-age=300` (5 minutes) | Repeated clicks cost nothing |
-| Netlify CDN, API responses | `s-maxage=86400` (a day), `durable`, `stale-while-revalidate=604800` (a week) | The data changes rarely; one copy is shared by every visitor, and an expired copy is served while it refreshes |
-| Worker responses | `Cache-Control: public, s-maxage=86400` on 200s | Marks them cacheable; errors and `/ping` are never cached |
+| Netlify CDN, API responses | `s-maxage=300` (5 minutes), `durable`, `stale-while-revalidate=600` (10 more minutes) | One copy is shared by every visitor, so a URL costs at most about 12 backend reads an hour. New answers appear within about 5 to 15 minutes, with no manual cache clearing. The TTL is one constant, `CDN_CACHE` in `netlify/functions/api.mjs` |
+| Worker responses | `Cache-Control: public, s-maxage=86400` on 200s | Marks them cacheable; errors and `/ping` are never cached. The proxy's CDN header above takes precedence, so this value does not set how long the site keeps a copy |
 | `/ping` (usage events) | `no-store` | Every visit must be counted |
 | Browser, JS and CSS | `max-age=0, must-revalidate` and `?v=N` in the URL | Unchanged files cost a 304; bumping `N` forces new code, so a browser never mixes new and old scripts |
 | Browser, last good copy | `localStorage`, up to 7 days, 300,000 characters per entry | If the service is down or busy, the page shows the last good copy with a notice |
 
-The trade-off: a data change can take **up to a day** to appear, unless the cache is cleared. That is acceptable because the content is curated and changes rarely.
+The trade-off: a data change takes **about 5 to 15 minutes** to appear (5 minute TTL plus up to 10 minutes of serving the old copy while it refreshes). The cost is small because the content is curated and a URL reaches the backend at most about 12 times an hour. Cached copies from before this setting was deployed keep their old lifetime until they expire or the cache is cleared once.
 
 ## Error handling
 
@@ -89,6 +89,8 @@ There is no separate monitoring service. The logs are the monitoring, and they c
 | Cloudflare dashboard → D1 | Rows read and written against the free-plan daily limits |
 
 **Privacy by design:** the browser sends three kinds of anonymous event to `/api/v1/ping`. Nothing is stored in the browser, no cookies are set, nothing goes to a third party, and visitors who send Do Not Track send nothing. The `visitor` value is a SHA-256 hash of the address, the date and a secret, cut to 6 bytes, so it changes every day and cannot be turned back into an address.
+
+**Traffic dashboard:** every request and usage event is also written to Cloudflare Analytics Engine (90 days, anonymous). A password-protected page on the backend, `/admin`, turns it into success and failure rate, most used APIs, response times, most clicked companies and unique visitors; see the backend README. Logs stay the tool for individual errors, the dashboard is for trends.
 
 **What is not set up yet:** there are no alerts. Nobody is paged when errors rise, so someone has to look at the dashboards. A daily check of the 5xx rate and D1 usage is the first thing to automate.
 

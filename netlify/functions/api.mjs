@@ -2,9 +2,10 @@ const ALLOWED_PATH = /^\/api\/v1\/(health|graph|companies|companies\/[a-z0-9-]+(
 const FORWARDED_PARAMS = ['q', 'page', 'limit', 'time_window', 'difficulty', 'topic', 'kind', 'company', 'category', 'status'];
 const TIMEOUT_MS = 8000;
 
-// Data changes rarely: keep it a day in the shared CDN cache (durable = one copy across edge nodes) and
-// serve it stale for a week while refreshing, so most visitors never reach the backend.
-const CDN_CACHE = 'public, durable, s-maxage=86400, stale-while-revalidate=604800';
+// New answers are added in batches, so a copy may be at most 5 minutes old in the shared CDN cache (durable = one
+// copy across edge nodes) and, while it refreshes, stale for up to 10 more. Repeat visitors still never reach the
+// backend: each URL costs about 12 backend reads an hour at most, however many people ask.
+const CDN_CACHE = 'public, durable, s-maxage=300, stale-while-revalidate=600';
 const BROWSER_CACHE = 'public, max-age=300';
 
 const fail = (status, code, message, headers = {}) =>
