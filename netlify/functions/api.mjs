@@ -2,16 +2,6 @@ const ALLOWED_PATH = /^\/api\/v1\/(health|graph|companies|companies\/[a-z0-9-]+(
 const FORWARDED_PARAMS = ['q', 'page', 'limit', 'time_window', 'difficulty', 'topic', 'kind', 'company', 'category', 'status'];
 const TIMEOUT_MS = 8000;
 
-// The backend this site reads from. Its address is not a secret (only the key is), so it lives in code: a stale or
-// overridden Netlify variable can no longer point the site at the wrong server. API_BASE_URL is honoured only for a
-// backend on this machine, so `netlify dev` can talk to `npm start`.
-const API_BASE_URL = 'https://interviewsyntax-backend.nupurmunda66.workers.dev';
-const LOCAL_BACKEND = /^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?\/*$/;
-const upstreamBase = () => {
-  const override = process.env.API_BASE_URL?.trim();
-  return (override && LOCAL_BACKEND.test(override) ? override : API_BASE_URL).replace(/\/+$/, '');
-};
-
 // Data changes rarely: keep it a day in the shared CDN cache (durable = one copy across edge nodes) and
 // serve it stale for a week while refreshing, so most visitors never reach the backend.
 const CDN_CACHE = 'public, durable, s-maxage=86400, stale-while-revalidate=604800';
@@ -34,7 +24,7 @@ async function handle(request, context) {
   const url = new URL(request.url);
   if (!ALLOWED_PATH.test(url.pathname)) return fail(404, 'not_found', 'route not found');
 
-  const upstream = new URL(upstreamBase() + url.pathname.slice('/api'.length));
+  const upstream = new URL(process.env.API_BASE_URL.replace(/\/+$/, '') + url.pathname.slice('/api'.length));
   for (const name of FORWARDED_PARAMS) {
     const value = url.searchParams.get(name);
     if (value !== null) upstream.searchParams.set(name, value);

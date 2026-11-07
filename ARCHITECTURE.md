@@ -94,7 +94,7 @@ There is no separate monitoring service. The logs are the monitoring, and they c
 
 ## Security in short
 
-- The backend address is a constant in the proxy (it is public; the proxy ignores `API_BASE_URL` unless it points at a local backend). The API key lives only in Netlify's environment and the Worker's secrets. It is never in the browser or in git, and `.env*` files are git-ignored.
+- The API key lives only in Netlify's environment and the Worker's secrets. It is never in the browser or in git, and `.env*` files are git-ignored.
 - The proxy forwards only allow-listed GET paths and only these query parameters: `q`, `page`, `limit`, `time_window`, `difficulty`, `topic`, plus the usage fields for `/ping`. It returns no upstream headers except `Retry-After`.
 - The Content-Security-Policy is `default-src 'self'; script-src 'self'; connect-src 'self'`, with no inline script or style. Data is rendered with `textContent`, and links are created only for `https://` URLs with `rel="noopener noreferrer"`.
 - Sources marked hidden never reach D1 or any response, including counts.

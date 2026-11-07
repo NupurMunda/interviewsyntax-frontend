@@ -7,7 +7,7 @@ let calls;
 let reply;
 
 beforeEach(() => {
-  delete process.env.API_BASE_URL;
+  process.env.API_BASE_URL = 'https://backend.example.test/';
   process.env.API_KEY = 'secret-key';
   calls = [];
   reply = () => Response.json({ data: [], meta: {} });
@@ -86,7 +86,7 @@ describe('method and path allow-list', () => {
     ];
     for (const path of paths) assert.equal((await get(path)).status, 200, path);
     assert.deepEqual(calls.map((c) => new URL(c.url).pathname), paths.map((p) => p.slice(4)));
-    assert.equal(new URL(calls[0].url).origin, 'https://interviewsyntax-backend.nupurmunda66.workers.dev');
+    assert.equal(new URL(calls[0].url).origin, 'https://backend.example.test');
   });
 
   it('is mounted at /api/*', () => {
@@ -186,25 +186,5 @@ describe('interview prep routes', () => {
     calls.length = 0;
     for (const path of ['/api/v1/prep', '/api/v1/prep/behavioral', '/api/v1/prep/ai/extra']) assert.equal((await get(path)).status, 404, path);
     assert.equal(calls.length, 0);
-  });
-});
-
-describe('which backend the proxy calls', () => {
-  it('uses the backend in the code, whatever API_BASE_URL says, unless it is on this machine', async () => {
-    for (const stale of ['https://roundwise-backend.nupurmunda66.workers.dev', 'https://evil.example.test', 'http://10.0.0.5:8787', 'http://127.0.0.1.evil.test', '']) {
-      process.env.API_BASE_URL = stale;
-      calls.length = 0;
-      await get('/api/v1/companies');
-      assert.equal(new URL(calls[0].url).origin, 'https://interviewsyntax-backend.nupurmunda66.workers.dev', `for API_BASE_URL=${stale}`);
-    }
-  });
-
-  it('lets a local backend override it, for netlify dev', async () => {
-    for (const [value, origin] of [['http://127.0.0.1:8787', 'http://127.0.0.1:8787'], ['http://localhost:8787/', 'http://localhost:8787']]) {
-      process.env.API_BASE_URL = value;
-      calls.length = 0;
-      await get('/api/v1/companies');
-      assert.equal(new URL(calls[0].url).origin, origin);
-    }
   });
 });

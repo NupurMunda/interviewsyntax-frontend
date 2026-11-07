@@ -32,7 +32,7 @@ The browser only calls same-origin `/api/*`. `netlify/functions/api.mjs` forward
 ## Run locally
 
 1. Start the backend (in `interviewsyntax-backend`): `npm start` (http://127.0.0.1:8787).
-2. Copy `.env.example` to `.env` and set `API_BASE_URL=http://127.0.0.1:8787` (the proxy honours `API_BASE_URL` only for a backend on this machine). Leave `API_KEY` empty for a local backend with no key.
+2. Copy `.env.example` to `.env` and set `API_BASE_URL=http://127.0.0.1:8787`. Leave `API_KEY` empty for a local backend with no key.
 3. `npx netlify-cli dev`, then open http://localhost:8888.
 
 Bump `?v=N` in every HTML file and in the `common.js` imports whenever a script or the stylesheet changes (see Security notes).
@@ -44,7 +44,7 @@ Tests: `npm test` (Node's built-in test runner, no dependencies).
 1. Push this repo to GitHub.
 2. In Netlify: **Add new site** → **Import an existing project** → **GitHub**, and pick the repo.
 3. Build command: leave empty. Publish directory: `.`. Functions directory: `netlify/functions` (already set in `netlify.toml`).
-4. Under **Site configuration → Environment variables** set `API_KEY`. The backend's address is a constant at the top of `netlify/functions/api.mjs` (it is not a secret), so switching servers is a reviewed code change, not a dashboard setting.
+4. Under **Site configuration → Environment variables** set `API_BASE_URL` (the backend's worker URL, no trailing path) and `API_KEY`.
 5. Deploy. Then set the backend's `ALLOWED_ORIGIN` to the Netlify URL only if the browser ever calls the backend directly; the proxy does not need it.
 
 ## Security notes
