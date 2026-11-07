@@ -188,3 +188,15 @@ describe('interview prep routes', () => {
     assert.equal(calls.length, 0);
   });
 });
+
+describe('configuration', () => {
+  it('answers 500 with a clear error when API_BASE_URL is missing or invalid', async () => {
+    for (const bad of [undefined, '', 'not a url']) {
+      if (bad === undefined) delete process.env.API_BASE_URL;
+      else process.env.API_BASE_URL = bad;
+      const res = await get('/api/v1/companies');
+      assert.equal(res.status, 500);
+      assert.equal((await res.json()).error.code, 'misconfigured');
+    }
+  });
+});

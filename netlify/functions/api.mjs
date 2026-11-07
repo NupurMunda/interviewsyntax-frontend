@@ -14,8 +14,17 @@ const fail = (status, code, message, headers = {}) =>
 export default async function handler(request, context) {
   const started = Date.now();
   const response = await handle(request, context);
-  console.log(JSON.stringify({ event: 'api', path: new URL(request.url).pathname, status: response.status, ms: Date.now() - started }));
+  console.log(JSON.stringify({ event: 'api', path: new URL(request.url).pathname, backend: backendHost(), status: response.status, ms: Date.now() - started }));
   return response;
+}
+
+// Which backend this deploy talks to (the host only), so a wrong API_BASE_URL is visible in the function logs.
+function backendHost() {
+  try {
+    return new URL(process.env.API_BASE_URL).host;
+  } catch {
+    return null;
+  }
 }
 
 async function handle(request, context) {
@@ -24,7 +33,13 @@ async function handle(request, context) {
   const url = new URL(request.url);
   if (!ALLOWED_PATH.test(url.pathname)) return fail(404, 'not_found', 'route not found');
 
-  const upstream = new URL(process.env.API_BASE_URL.replace(/\/+$/, '') + url.pathname.slice('/api'.length));
+  let upstream;
+  try {
+    upstream = new URL(process.env.API_BASE_URL.trim().replace(/\/+$/, '') + url.pathname.slice('/api'.length));
+  } catch {
+    console.error(JSON.stringify({ event: 'config_error', problem: 'API_BASE_URL is missing or not a valid URL' }));
+    return fail(500, 'misconfigured', 'the data service address is not configured');
+  }
   for (const name of FORWARDED_PARAMS) {
     const value = url.searchParams.get(name);
     if (value !== null) upstream.searchParams.set(name, value);
