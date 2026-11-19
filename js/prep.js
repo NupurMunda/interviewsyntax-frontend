@@ -13,24 +13,29 @@ const SECTIONS = {
 };
 const kind = location.pathname.split('/')[2] ?? '';
 const root = $('prep');
-const state = { topic: '', page: 0, loaded: 0 };
+const state = { topic: '', company: '', page: 0, loaded: 0 };
 
-function topicField(topics, onChange) {
-  const wrapper = el('label', 'field', 'Topic');
+function selectField(label, allLabel, choices, onChange) {
+  const wrapper = el('label', 'field', label);
   const select = el('select', 'select');
-  const all = el('option', null, 'All topics');
+  const all = el('option', null, allLabel);
   all.value = '';
   select.append(all);
-  for (const t of topics) {
-    const coverage = t.answered ? `${t.answered} of ${t.total} published` : 'none published yet';
-    const option = el('option', null, `${t.name} (${coverage})`);
-    option.value = t.name;
+  for (const choice of choices) {
+    const option = el('option', null, choice.text);
+    option.value = choice.value;
     select.append(option);
   }
   select.addEventListener('change', () => onChange(select.value));
   wrapper.append(select);
   return wrapper;
 }
+
+const topicChoices = (topics) => topics.map((t) => ({
+  value: t.name,
+  text: `${t.name} (${t.answered ? `${t.answered} of ${t.total} published` : 'none published yet'})`,
+}));
+const companyChoices = (companies) => companies.map((c) => ({ value: c.slug, text: `${c.name} (${c.total})` }));
 
 function titleRow(item, titleNode) {
   const row = el('div', 'qhead');
@@ -99,7 +104,7 @@ async function load() {
 
   const showProgress = (meta) => {
     if (kind === 'system-design') progress.textContent = plural(meta.questions, 'question');
-    else if (state.topic) progress.textContent = `${meta.total} published ${meta.total === 1 ? 'answer' : 'answers'} in this topic`;
+    else if (state.topic || state.company) progress.textContent = `${meta.total} published ${meta.total === 1 ? 'answer' : 'answers'} for this selection`;
     else progress.textContent = `${meta.total} of ${plural(meta.questions, 'question')} have published answers.`;
   };
   const render = (result, reset) => {
@@ -112,13 +117,13 @@ async function load() {
     showProgress(result.meta);
     more.hidden = state.loaded >= result.meta.total;
     status.replaceChildren();
-    if (!state.loaded) showStatus(status, 'No published answers for this topic yet. More are being added.');
+    if (!state.loaded) showStatus(status, 'No published answers for this selection yet. More are being added.');
   };
   const fetchPage = async (reset) => {
     more.disabled = true;
     try {
       const page = reset ? 1 : state.page + 1;
-      const result = await api(`prep/${kind}`, { topic: state.topic, page, limit: PAGE_SIZE });
+      const result = await api(`prep/${kind}`, { topic: state.topic, company: state.company, page, limit: PAGE_SIZE });
       state.page = page;
       render(result, reset);
     } catch (error) {
@@ -131,13 +136,16 @@ async function load() {
   const parts = [el('h1', null, section.title), el('p', 'muted lead', section.blurb)];
   const controls = el('div', 'controls');
   if (first.meta.topics.length) {
-    controls.append(topicField(first.meta.topics, (topic) => { state.topic = topic; fetchPage(true); }));
+    controls.append(selectField('Topic', 'All topics', topicChoices(first.meta.topics), (topic) => { state.topic = topic; fetchPage(true); }));
+  }
+  if (first.meta.companies?.length) {
+    controls.append(selectField('Company', 'All companies', companyChoices(first.meta.companies), (company) => { state.company = company; fetchPage(true); }));
   }
   parts.push(controls);
   const card = el('section', 'card');
   card.append(progress, list, status, more);
   root.replaceChildren(...parts, card);
-  Object.assign(state, { topic: '', page: 1 });
+  Object.assign(state, { topic: '', company: '', page: 1 });
   render(first, true);
 }
 
