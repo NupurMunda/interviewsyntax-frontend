@@ -18,8 +18,7 @@ function codeBlock(text) {
 function sectionCard(section) {
   const card = el('section', 'card prose');
   card.append(el('h2', null, section.heading));
-  for (const paragraph of section.paragraphs) card.append(paragraph.includes('
-') ? codeBlock(paragraph) : richText(el('p'), paragraph));
+  for (const paragraph of section.paragraphs) card.append(paragraph.includes('\n') ? codeBlock(paragraph) : richText(el('p'), paragraph));
   if (section.points.length) card.append(bulletList(section.points));
   return card;
 }
