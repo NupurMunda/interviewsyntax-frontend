@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, markNav, richText, showStatus, track } from './common.js?v=14';
+import { $, api, el, errorMessage, initTheme, link, markNav, richText, showStatus, track } from './common.js?v=15';
 
 const id = location.pathname.split('/')[2] ?? '';
 const root = $('question');
@@ -10,10 +10,16 @@ function bulletList(items) {
   return ul;
 }
 
+// A paragraph with line breaks is a code listing: shown as-is (monospace, indentation kept), never parsed for markup.
+function codeBlock(text) {
+  return el('pre', 'code', text);
+}
+
 function sectionCard(section) {
   const card = el('section', 'card prose');
   card.append(el('h2', null, section.heading));
-  for (const paragraph of section.paragraphs) card.append(richText(el('p'), paragraph));
+  for (const paragraph of section.paragraphs) card.append(paragraph.includes('
+') ? codeBlock(paragraph) : richText(el('p'), paragraph));
   if (section.points.length) card.append(bulletList(section.points));
   return card;
 }

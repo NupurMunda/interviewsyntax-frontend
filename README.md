@@ -28,6 +28,7 @@ The browser only calls same-origin `/api/*`. `netlify/functions/api.mjs` forward
 - **System design prep** is a numbered list. Each question has a one-line description, tags for its key concepts and the solution links we collected (articles, videos, papers, discussions). Questions with no links yet say so.
 - **Company pages** point to our content: an AI question with a written answer opens its answer page, and system design questions show our description and links. The original source link remains only as a small "Original question" chip for AI questions with no answer yet.
 - **Rich text** in answers is `**bold**` and `*italic*` markers turned into `strong` and `em` elements by `richText()` in `js/common.js`, using `createElement` and text nodes only. Nothing from the API is parsed as HTML.
+- **Code listings** in answers: a paragraph that contains a line break is shown by `codeBlock()` in `js/question.js` as a `pre.code` element (text only, monospace, indentation kept, scrolls sideways). Write code in a section headed "Code ..."; the validator forbids unbalanced `*`, so avoid `*` in code.
 
 ## Run locally
 

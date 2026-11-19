@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, formatDay, initTheme, isRecent, link, markNav, plural, showStatus, track } from './common.js?v=14';
+import { $, api, el, errorMessage, formatDay, initTheme, isRecent, link, markNav, plural, showStatus, track } from './common.js?v=15';
 
 const PAGE_SIZE = 50;
 const SECTIONS = {

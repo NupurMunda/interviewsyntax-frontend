@@ -130,6 +130,7 @@ td a { font-weight: 600; }
 .topic { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
 details { border-top: 1px solid var(--line); padding-top: 8px; }
 summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+pre.code { white-space: pre; max-height: none; line-height: 1.45; tab-size: 4; }
 pre { margin: 8px 0 0; padding: 12px; background: var(--bg); border-radius: 8px; overflow-x: auto; white-space: pre-wrap; font: 12px/1.5 var(--f-mono); max-height: 360px; overflow-y: auto; }
 
 .pill.pop { animation: pop .2s ease-out forwards; }

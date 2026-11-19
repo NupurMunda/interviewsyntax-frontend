@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, showStatus, track } from './common.js?v=14';
+import { $, api, el, errorMessage, initTheme, link, showStatus, track } from './common.js?v=15';
 
 const root = $('sources');
 
