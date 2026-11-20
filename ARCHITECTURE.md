@@ -101,6 +101,10 @@ There is no separate monitoring service. The logs are the monitoring, and they c
 - The Content-Security-Policy is `default-src 'self'; script-src 'self'; connect-src 'self'`, with no inline script or style. Data is rendered with `textContent`, and links are created only for `https://` URLs with `rel="noopener noreferrer"`.
 - Sources marked hidden never reach D1 or any response, including counts.
 
+## Signed-in features (off by default)
+
+Everything about accounts is additive: with `AUTH_ENABLED` unset, `private.mjs` answers 404 for `/auth/*` and `/me*`, the pages add nothing, and the site and `api.mjs` behave exactly as before. When on, `private.mjs` is a second proxy to the same Worker for those paths only (exact route table, allow-listed headers, one cookie pair, never cached, redirects only to Google or the same host), `js/account.js` shows the sign-in button, account menu and progress selectors, and `js/sync.js` keeps marks consistent across devices (server-authoritative; a stale device adopts the server state and is told, it never overwrites). How it is tested and what remains unproven: `../roundwise-backend/docs/AUTH-ARCHITECTURE.md`. Running it: `../roundwise-backend/docs/OPERATIONS.md`.
+
 ## Where to look in the code
 
 | Topic | File |
@@ -111,4 +115,9 @@ There is no separate monitoring service. The logs are the monitoring, and they c
 | Failure, query-plan, logging and tracking tests | `interviewsyntax-backend/tests/resilience.test.ts` |
 | Proxy, cache headers, allow-list | `netlify/functions/api.mjs` |
 | API client, saved-copy fallback, error messages, safe rich text | `js/common.js` |
-| Security headers and redirects | `netlify.toml` |
+| Security headers and redirects (everything that is not a page is a forced 404; `tests/routing.test.mjs` enforces it) | `netlify.toml` |
+| Private proxy for sign-in and progress | `netlify/functions/private.mjs` |
+| Sign-in UI, account menu, progress selectors | `js/account.js`, `css/account.css` |
+| Sync, offline queue, conflicts | `js/sync.js` |
+| Browser tests (fake Worker, and the real one) | `tests-e2e/`, `tests-e2e/real/` |
+| Deploy-preview checker | `scripts/verify-preview.mjs` |

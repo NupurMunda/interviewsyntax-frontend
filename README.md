@@ -38,7 +38,12 @@ The browser only calls same-origin `/api/*`. `netlify/functions/api.mjs` forward
 
 Bump `?v=N` in every HTML file and in the `common.js` imports whenever a script or the stylesheet changes (see Security notes).
 
-Tests: `npm test` (Node's built-in test runner, no dependencies).
+Tests:
+- `npm test`: unit tests (Node's built-in runner, no dependencies): proxy, sync, privacy page, routing, deploy-preview checker.
+- `npm run test:e2e`: browser tests on the installed Chrome (set `PW_CHANNEL=chromium` after `npx playwright install chromium` to use Playwright's own): sign-in UI against a fake Worker, accessibility (axe), layout at 320 to 768 px, desktop and mobile.
+- `npm run test:e2e:real`: browser tests against the **real Worker** on local D1, the real Netlify functions and a local stand-in for Google, including the complete product journey. Needs `../roundwise-backend`; starts and stops everything itself.
+- `node scripts/verify-preview.mjs <url> [--start-sign-in]`: read-only routing and header check for a deployed preview (owner-run).
+Sign-in is off unless `AUTH_ENABLED=true` is set in Netlify (and on the Worker); see `../roundwise-backend/docs/LAUNCH-CHECKLIST.md`.
 
 ## Deploy to Netlify
 
