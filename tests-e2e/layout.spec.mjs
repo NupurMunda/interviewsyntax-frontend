@@ -5,10 +5,9 @@ const WIDTHS = [320, 360, 375, 390, 414, 768];
 
 test.setTimeout(120_000); // each test visits several pages
 
-test.beforeEach(async ({ request, context }, info) => {
+test.beforeEach(async ({ request, context }) => {
   await context.route(/fonts.(googleapis|gstatic).com/, (route) => route.abort()); // never depend on the public internet
 
-  test.skip(info.project.name !== 'desktop', 'sizes are set explicitly below, so one project is enough');
   await request.post(`${ON}/__test/reset`);
   await request.post(`${ON}/__test/session`, { data: { token: 'tok-ada-0001', ref: 'ref-ada', name: 'Ada Lovelace', email: 'ada.lovelace.with.a.long.address@example.com' } });
 });

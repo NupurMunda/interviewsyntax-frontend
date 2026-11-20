@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "npx netlify-cli dev",
     "test": "node --test",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:real": "playwright test -c playwright.real.config.mjs"
   },
   "engines": {
     "node": ">=20"
