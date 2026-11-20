@@ -47,7 +47,7 @@ for (const scheme of ['light', 'dark']) {
         await audit(page, `signed out ${path}`);
       }
       await page.goto(`${ON}/prep/ai`);
-      await page.getByRole('button', { name: 'Done' }).first().click();
+      await page.getByRole('button', { name: 'Not Started' }).first().click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await audit(page, 'sign-in dialog');
     });

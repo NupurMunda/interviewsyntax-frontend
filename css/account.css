@@ -28,7 +28,18 @@ td .prog { display: flex; }
 .prog-btn { font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 6px 12px; min-height: 32px; cursor: pointer; }
 .prog-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .prog-btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.prog-btn[data-value="done"][aria-pressed="true"]::before { content: "✓ "; }
+/* The status button: neutral when Not Started, green when Done, yellow when Revisit. */
+/* Text colours are darker than the borders in the light theme so the label keeps 4.5:1 contrast on its tint. */
+:root { --st-revisit: #8A6A00; --st-done-ink: #145A3A; --st-revisit-ink: #5E4700; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --st-revisit: #F2C94C; --st-done-ink: var(--easy); --st-revisit-ink: #F2C94C; } }
+:root[data-theme="dark"] { --st-revisit: #F2C94C; --st-done-ink: var(--easy); --st-revisit-ink: #F2C94C; }
+.prog-status { min-width: 104px; text-align: center; }
+.prog-status[data-status="done"] { color: var(--st-done-ink); border-color: var(--easy); background: color-mix(in srgb, var(--easy) 14%, var(--surface)); }
+.prog-status[data-status="done"]::before { content: "✓ "; }
+.prog-status[data-status="revisit"] { color: var(--st-revisit-ink); border-color: var(--st-revisit); background: color-mix(in srgb, var(--st-revisit) 16%, var(--surface)); }
+.prog-status:hover:not(:disabled) { filter: brightness(1.08); }
+.status-col { text-align: right; white-space: nowrap; }
+td.status-col .prog { display: inline-flex; margin-top: 0; }
 .prog-btn:disabled { opacity: .55; cursor: default; }
 .prog.pending .prog-btn[aria-pressed="true"] { border-style: dashed; }
 .prog-company { margin-top: 0; }

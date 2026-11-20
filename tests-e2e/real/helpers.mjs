@@ -37,4 +37,11 @@ export async function signInThroughUi(page, accountName) {
 }
 
 export const row = (page, title, group = 'Progress') => page.getByRole('group', { name: `${group} for ${title}` });
-export const mark = (page, title, status) => row(page, title).getByRole('button', { name: status });
+// One status button per question: Not Started -> Done -> Revisit -> Not Started on each click.
+export const mark = (page, title) => row(page, title).getByRole('button');
+const ORDER = ['none', 'done', 'revisit'];
+export async function setStatus(page, title, status) {
+  const button = mark(page, title);
+  const current = (await button.getAttribute('data-status')) ?? 'none';
+  for (let i = (ORDER.indexOf(status) - ORDER.indexOf(current) + 3) % 3; i > 0; i--) await button.click();
+}

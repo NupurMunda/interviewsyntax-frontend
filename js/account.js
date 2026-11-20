@@ -5,6 +5,9 @@ import { createSync, keys } from './sync.js?v=15';
 
 const ME_TIMEOUT_MS = 3000;
 const STATUS_LABEL = { done: 'Done', revisit: 'Revisit' };
+// One button per question: each click moves to the next status, and Revisit goes back to Not Started.
+const STATUS_TEXT = { none: 'Not Started', ...STATUS_LABEL };
+const NEXT_STATUS = { none: 'done', done: 'revisit', revisit: 'none' };
 const TYPE_FOR_CATEGORY = { ai: 'ai', hld: 'system_design' };
 
 let auth = { state: 'unknown', user: null }; // unknown | off | out | in
@@ -274,9 +277,9 @@ function makeSelector(record) {
   const group = el('div', kind === 'company' ? 'prog prog-company' : 'prog');
   group.setAttribute('role', 'group');
   group.setAttribute('aria-label', kind === 'company' ? `Tracking for ${title}` : `Progress for ${title}`);
-  const buttons = kind === 'company' ? [['track', 'Track company']] : Object.entries(STATUS_LABEL);
+  const buttons = kind === 'company' ? [['track', 'Track company']] : [['status', STATUS_TEXT.none]];
   for (const [value, label] of buttons) {
-    const button = el('button', 'prog-btn', label);
+    const button = el('button', kind === 'company' ? 'prog-btn' : 'prog-btn prog-status', label);
     button.type = 'button';
     button.dataset.value = value;
     button.addEventListener('click', () => choose(record, value, button));
@@ -295,8 +298,8 @@ function paint(record) {
   node.setAttribute('aria-busy', String(loading));
   const state = signedIn && !loading ? sync.get(key) : { value: kind === 'company' ? false : 'none', pending: false };
   for (const button of node.querySelectorAll('button')) {
-    const on = kind === 'company' ? state.value === true : state.value === button.dataset.value;
-    button.setAttribute('aria-pressed', String(on));
+    if (kind === 'company') button.setAttribute('aria-pressed', String(state.value === true));
+    else { button.textContent = STATUS_TEXT[state.value] ?? STATUS_TEXT.none; button.dataset.status = state.value; }
     button.disabled = loading;
   }
   node.classList.toggle('pending', state.pending);
@@ -305,7 +308,7 @@ function paint(record) {
 function choose(record, value, button) {
   if (auth.state !== 'in') { openSignIn(button); return; }
   const current = sync.get(record.key).value;
-  const next = record.kind === 'company' ? !current : (current === value ? 'none' : value);
+  const next = record.kind === 'company' ? !current : NEXT_STATUS[current] ?? 'done';
   if (!sync.set(record.key, next)) { toast('Your progress is still loading. Try again in a moment.'); return; }
   announceChange(record, next);
 }
@@ -314,7 +317,7 @@ function announceChange(record, next) {
   const live = liveRegion();
   live.textContent = record.kind === 'company'
     ? `${record.title} ${next ? 'tracked' : 'no longer tracked'}`
-    : `${record.title}: ${next === 'none' ? 'cleared' : STATUS_LABEL[next]}`;
+    : `${record.title}: ${STATUS_TEXT[next]}`;
 }
 
 let live;

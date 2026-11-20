@@ -67,7 +67,7 @@ for (const width of WIDTHS) {
 
     test('the Google button keeps its fixed size and the sign-in dialog fits the screen', async ({ browser }) => {
       const { context, page } = await open(browser, false, '/prep/ai');
-      await page.getByRole('button', { name: 'Done' }).first().click();
+      await page.getByRole('button', { name: 'Not Started' }).first().click();
       const dialog = page.getByRole('dialog');
       await expect(dialog).toBeVisible();
       const d = await dialog.boundingBox();

@@ -108,6 +108,9 @@ function dsaPanel(host) {
       const table = el('table');
       const head = el('tr');
       for (const name of ['Problem', 'Difficulty', 'Topics']) head.append(el('th', null, name));
+      const statusHead = el('th', 'status-col', 'Status'); // shown only once the progress control is placed (sign-in on)
+      statusHead.hidden = true;
+      head.append(statusHead);
       const body = el('tbody');
       table.append(el('thead'), body);
       table.tHead.append(head);
@@ -118,11 +121,13 @@ function dsaPanel(host) {
           const tr = el('tr');
           const title = el('td');
           title.append(link(row.url, row.title));
-          attachProgress(tr, { type: 'company_dsa', id: row.id, title: row.title }, (node) => title.append(node));
+          const status = el('td', 'status-col');
+          status.hidden = true;
+          attachProgress(tr, { type: 'company_dsa', id: row.id, title: row.title }, (node) => { status.append(node); status.hidden = false; statusHead.hidden = false; });
           tr.append(title, el('td', row.difficulty ?? '', row.difficulty ?? '—'));
           const topics = el('td');
           topics.append(chips(row.topics));
-          tr.append(topics);
+          tr.append(topics, status);
           body.append(tr);
         }
       };

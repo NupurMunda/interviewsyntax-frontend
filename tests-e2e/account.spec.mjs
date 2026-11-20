@@ -16,8 +16,9 @@ test.beforeEach(async ({ request, context }) => {
 });
 
 const noHorizontalScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
-const doneButton = (page, title) => page.getByRole('group', { name: `Progress for ${title}` }).getByRole('button', { name: 'Done' });
-const revisitButton = (page, title) => page.getByRole('group', { name: `Progress for ${title}` }).getByRole('button', { name: 'Revisit' });
+// One status button per question: Not Started -> Done -> Revisit -> Not Started on each click.
+const doneButton = (page, title) => page.getByRole('group', { name: `Progress for ${title}` }).getByRole('button');
+const revisitButton = doneButton;
 
 test.describe('sign-in switched off (the production default)', () => {
   const pages = ['/', '/prep/ai', '/prep/system-design', '/c/acme', '/q/101', '/sources', '/privacy'];
@@ -84,7 +85,8 @@ test.describe('signed out, sign-in on', () => {
     await expect(open).toBeVisible();
     const done = doneButton(page, 'How does attention work?');
     await expect(done).toBeEnabled();
-    await expect(done).toHaveAttribute('aria-pressed', 'false');
+    await expect(done).toHaveAttribute('data-status', 'none');
+    await expect(done).toHaveText('Not Started');
     await done.click();
     const dialog = page.getByRole('dialog', { name: 'Sign in to track your progress' });
     await expect(dialog).toBeVisible();
@@ -149,24 +151,29 @@ test.describe('signed in', () => {
     await signIn(context, request);
     await page.goto(`${ON}/prep/ai`);
     await doneButton(page, 'How does attention work?').click();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'done');
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:ai:101']?.value).toBe('done');
     await page.reload();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
-    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('aria-pressed', 'false');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'done');
+    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('data-status', 'none');
 
     await page.goto(`${ON}/prep/system-design`);
     await revisitButton(page, 'Design a URL shortener').click();
+    await expect(revisitButton(page, 'Design a URL shortener')).toHaveText('Done');
+    await revisitButton(page, 'Design a URL shortener').click();
+    await expect(revisitButton(page, 'Design a URL shortener')).toHaveText('Revisit');
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:system_design:301']?.value).toBe('revisit');
 
     await page.goto(`${ON}/c/acme`);
     await doneButton(page, 'Two Sum').click();
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:company_dsa:201']?.value).toBe('done');
-    await doneButton(page, 'Two Sum').click(); // pressing the active choice clears it
+    await doneButton(page, 'Two Sum').click(); // Done -> Revisit
+    await expect.poll(async () => (await state(request)).rows['ref-ada|p:company_dsa:201']?.value).toBe('revisit');
+    await doneButton(page, 'Two Sum').click(); // Revisit -> Not Started
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:company_dsa:201']?.value).toBe('none');
 
     await page.goto(`${ON}/q/101`);
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'done');
   });
 
   test('company tracking toggles and persists', async ({ page, context, request }) => {
@@ -189,18 +196,18 @@ test.describe('signed in', () => {
     await page.route('**/me/progress', async (route) => { await gate; await route.continue(); });
     await page.goto(`${ON}/prep/ai`);
     const group = page.getByRole('group', { name: 'Progress for How does attention work?' });
-    const done = group.getByRole('button', { name: 'Done' });
+    const done = group.getByRole('button');
     await expect(group).toBeVisible();
     // The state is held open by the test, so these are exact rather than a race with a timer.
     await expect(group).toHaveAttribute('aria-busy', 'true');
     await expect(done).toBeDisabled();
-    await expect(done).toHaveAttribute('aria-pressed', 'false');
+    await expect(done).toHaveAttribute('data-status', 'none');
     await page.waitForTimeout(300);
     await expect(group).toHaveAttribute('aria-busy', 'true');
     release();
     await expect(group).toHaveAttribute('aria-busy', 'false');
     await expect(done).toBeEnabled();
-    await expect(done).toHaveAttribute('aria-pressed', 'true');
+    await expect(done).toHaveAttribute('data-status', 'done');
   });
 
   test('a failed first load recovers by itself: selectors stay unavailable, then show the saved progress', async ({ page, context, request }) => {
@@ -212,7 +219,7 @@ test.describe('signed in', () => {
     const group = page.getByRole('group', { name: 'Progress for How does attention work?' });
     await expect(group).toHaveAttribute('aria-busy', 'true');
     await expect(group).toHaveAttribute('aria-busy', 'false', { timeout: 10_000 });
-    await expect(group.getByRole('button', { name: 'Done' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(group.getByRole('button')).toHaveAttribute('data-status', 'done');
   });
 
   test('a saved copy shows at once on the next visit, before the network answers', async ({ page, context, request }) => {
@@ -222,7 +229,7 @@ test.describe('signed in', () => {
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:ai:101']?.value).toBe('done');
     await page.route('**/me/progress', () => {}); // never answers
     await page.reload();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'done');
   });
 
   test('two devices: the stale one never overwrites newer progress, and is told', async ({ browser, context, page, request }) => {
@@ -236,12 +243,13 @@ test.describe('signed in', () => {
     const second = await other.newPage();
     await second.goto(`${ON}/prep/ai`);
     await doneButton(second, 'How does attention work?').click();
-    await expect.poll(async () => (await state(request)).rows['ref-ada|p:ai:101']?.value).toBe('done');
+    await doneButton(second, 'How does attention work?').click(); // Done -> Revisit
+    await expect.poll(async () => (await state(request)).rows['ref-ada|p:ai:101']?.value).toBe('revisit');
 
-    await revisitButton(page, 'How does attention work?').click(); // A still believes revision 0
+    await doneButton(page, 'How does attention work?').click(); // A still believes revision 0 and sends Done
     await expect(page.getByText('Changed on another device')).toBeVisible();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
-    expect((await state(request)).rows['ref-ada|p:ai:101']).toMatchObject({ value: 'done', rev: 1 });
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'revisit');
+    expect((await state(request)).rows['ref-ada|p:ai:101']).toMatchObject({ value: 'revisit' });
     await other.close();
   });
 
@@ -255,7 +263,7 @@ test.describe('signed in', () => {
     await other.addCookies([{ name: 'sid', value: 'tok-ada-0001', url: ON }]);
     const second = await other.newPage();
     await second.goto(`${ON}/c/acme`);
-    await expect(doneButton(second, 'Valid Parentheses')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(second, 'Valid Parentheses')).toHaveAttribute('data-status', 'done');
     await other.close();
   });
 
@@ -265,7 +273,7 @@ test.describe('signed in', () => {
     await expect(doneButton(page, 'What is KV caching?')).toBeEnabled();
     await context.setOffline(true);
     await doneButton(page, 'What is KV caching?').click();
-    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('data-status', 'done');
     await expect(page.getByText('You are offline or the service is busy')).toBeVisible();
     expect((await state(request)).rows['ref-ada|p:ai:102']).toBeUndefined();
     await context.setOffline(false);
@@ -278,7 +286,7 @@ test.describe('signed in', () => {
     await expect(doneButton(page, 'What is KV caching?')).toBeEnabled();
     await page.route('**/me/progress', (route) => (route.request().method() === 'PUT' ? route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }) : route.continue()));
     await doneButton(page, 'What is KV caching?').click();
-    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'What is KV caching?')).toHaveAttribute('data-status', 'done');
     await page.unroute('**/me/progress');
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect.poll(async () => (await state(request)).rows['ref-ada|p:ai:102']?.value, { timeout: 15_000 }).toBe('done');
@@ -291,7 +299,7 @@ test.describe('signed in', () => {
     await expect(page.getByRole('link', { name: 'How does attention work?' })).toBeVisible();
     const group = page.getByRole('group', { name: 'Progress for How does attention work?' });
     await expect(group).toHaveAttribute('aria-busy', 'true');
-    await expect(group.getByRole('button', { name: 'Done' })).toBeDisabled();
+    await expect(group.getByRole('button')).toBeDisabled();
   });
 
   test('an expired session is reported once, the header falls back to Sign in, and the page keeps working', async ({ page, context, request }) => {
@@ -325,7 +333,7 @@ test.describe('signed in', () => {
     await page.getByRole('button', { name: 'Account menu for Ada Lovelace' }).click();
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'false');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'none');
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('isx-u:')))).toEqual([]);
     await expect(sibling.getByRole('button', { name: 'Sign in' })).toBeVisible();
     expect((await state(request)).rows['ref-ada|p:ai:101']).toMatchObject({ value: 'done' }); // the server keeps the account's data
@@ -340,7 +348,7 @@ test.describe('signed in', () => {
     await signIn(context, request, { token: 'tok-grace-0002', ref: 'ref-grace', name: 'Grace Hopper', email: 'grace@example.com' });
     await page.reload();
     await expect(page.getByRole('button', { name: 'Account menu for Grace Hopper' })).toBeVisible();
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'false');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'none');
     expect((await state(request)).rows['ref-grace|p:ai:101']).toBeUndefined();
   });
 
@@ -393,7 +401,7 @@ test.describe('dashboard', () => {
     await control(request, 'row', { ref: 'ref-ada', key: 'p:ai:101', value: 'done', rev: 1 });
     await page.route('https://accounts.google.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: 'google' }));
     await page.goto(`${ON}/prep/ai`); // saves a local copy first
-    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('aria-pressed', 'true');
+    await expect(doneButton(page, 'How does attention work?')).toHaveAttribute('data-status', 'done');
     await page.goto(`${ON}/dashboard`);
     await page.getByRole('button', { name: 'Delete my account…' }).click();
     await page.waitForURL('https://accounts.google.com/**');

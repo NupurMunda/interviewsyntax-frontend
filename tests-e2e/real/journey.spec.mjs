@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SITE, clean, idp, mark, prepare, signInThroughUi, sql } from './helpers.mjs';
+import { SITE, clean, idp, mark, prepare, setStatus, signInThroughUi, sql } from './helpers.mjs';
 
 test.beforeEach(async ({ context, request }) => {
   await prepare(context);
@@ -37,15 +37,15 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   const tracking = page.getByRole('group', { name: 'Tracking for Acme' }).getByRole('button');
   await tracking.click();
   await expect(tracking).toHaveAttribute('aria-pressed', 'true');
-  await mark(page, 'Fixture Problem 1', 'Done').click();
-  await mark(page, 'Fixture Problem 2', 'Revisit').click();
-  await expect(mark(page, 'Fixture Problem 1', 'Done')).toHaveAttribute('aria-pressed', 'true');
+  await setStatus(page, 'Fixture Problem 1', 'done');
+  await setStatus(page, 'Fixture Problem 2', 'revisit');
+  await expect(mark(page, 'Fixture Problem 1')).toHaveAttribute('data-status', 'done');
   await expect.poll(() => count(request, "status IN ('done','revisit')")).toBe(2);
   await page.goto(`${SITE}/prep/ai`);
-  await mark(page, 'Fixture AI question one', 'Done').click();
+  await setStatus(page, 'Fixture AI question one', 'done');
   await expect.poll(() => count(request, "question_type = 'ai' AND status = 'done'")).toBe(1);
   await page.goto(`${SITE}/prep/system-design`);
-  await mark(page, 'Fixture HLD question', 'Revisit').click();
+  await setStatus(page, 'Fixture HLD question', 'revisit');
   await expect.poll(() => count(request, "question_type = 'system_design' AND status = 'revisit'")).toBe(1);
 
   // 4. The dashboard agrees with what was done, and with the database.
@@ -68,16 +68,16 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   const again = await restarted.newPage();
   await again.goto(`${SITE}/c/acme`);
   await expect(accountMenu(again)).toBeVisible();
-  await expect(mark(again, 'Fixture Problem 1', 'Done')).toHaveAttribute('aria-pressed', 'true');
-  await expect(mark(again, 'Fixture Problem 2', 'Revisit')).toHaveAttribute('aria-pressed', 'true');
+  await expect(mark(again, 'Fixture Problem 1')).toHaveAttribute('data-status', 'done');
+  await expect(mark(again, 'Fixture Problem 2')).toHaveAttribute('data-status', 'revisit');
   await expect(again.getByRole('group', { name: 'Tracking for Acme' }).getByRole('button')).toHaveAttribute('aria-pressed', 'true');
-  await expect(mark(again, 'Fixture Problem 3', 'Done')).toHaveAttribute('aria-pressed', 'false');
+  await expect(mark(again, 'Fixture Problem 3')).toHaveAttribute('data-status', 'none');
 
   // 6. Sign out; public browsing carries on and nothing personal is left on the device.
   await accountMenu(again).click();
   await again.getByRole('button', { name: 'Sign out' }).click();
   await expect(again.getByRole('button', { name: 'Sign in' })).toBeVisible();
-  await expect(mark(again, 'Fixture Problem 1', 'Done')).toHaveAttribute('aria-pressed', 'false');
+  await expect(mark(again, 'Fixture Problem 1')).toHaveAttribute('data-status', 'none');
   expect(await again.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('isx-u:')))).toEqual([]);
   expect((await restarted.cookies()).find((c) => c.name === 'sid')?.value ?? '').toBe('');
   expect(Number((await sql(request, 'users', 'SELECT COUNT(*) AS n FROM sessions'))[0].n)).toBe(0);
@@ -94,20 +94,20 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   // 7. The same account signs in again and finds everything.
   await signInThroughUi(again, 'Ada Lovelace');
   await again.goto(`${SITE}/prep/ai`);
-  await expect(mark(again, 'Fixture AI question one', 'Done')).toHaveAttribute('aria-pressed', 'true');
+  await expect(mark(again, 'Fixture AI question one')).toHaveAttribute('data-status', 'done');
   await restarted.close();
 });
 
 test("a second account on the same browser sees none of the first one's progress", async ({ page, request }) => {
   await page.goto(`${SITE}/prep/ai`);
   await signInThroughUi(page, 'Ada Lovelace');
-  await mark(page, 'Fixture AI question one', 'Done').click();
+  await setStatus(page, 'Fixture AI question one', 'done');
   await expect.poll(() => count(request, "status = 'done'")).toBe(1);
   await accountMenu(page).click();
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
   await signInThroughUi(page, 'Grace Hopper');
-  await expect(mark(page, 'Fixture AI question one', 'Done')).toHaveAttribute('aria-pressed', 'false');
+  await expect(mark(page, 'Fixture AI question one')).toHaveAttribute('data-status', 'none');
   expect(Number((await sql(request, 'users', 'SELECT COUNT(*) AS n FROM users'))[0].n)).toBe(2);
 });
 
@@ -126,18 +126,18 @@ test('cancelling at Google, or a forged return, ends without signing in and says
 test('two devices on the real Worker: the stale device is told and never overwrites', async ({ page, browser, context, request }) => {
   await page.goto(`${SITE}/prep/ai`);
   await signInThroughUi(page, 'Ada Lovelace');
-  await expect(mark(page, 'Fixture AI question one', 'Done')).toBeEnabled();
+  await expect(mark(page, 'Fixture AI question one')).toBeEnabled();
   const other = await browser.newContext({ viewport: page.viewportSize() });
   await prepare(other);
   await other.addCookies((await context.storageState()).cookies);
   const second = await other.newPage();
   await second.goto(`${SITE}/prep/ai`);
-  await mark(second, 'Fixture AI question one', 'Done').click();
-  await expect.poll(() => count(request, "status = 'done'")).toBe(1);
-  await mark(page, 'Fixture AI question one', 'Revisit').click(); // this device still believes "never marked"
+  await setStatus(second, 'Fixture AI question one', 'revisit');
+  await expect.poll(() => count(request, "status = 'revisit'")).toBe(1);
+  await mark(page, 'Fixture AI question one').click(); // this device still believes "never marked" and sends Done
   await expect(page.getByText('Changed on another device')).toBeVisible();
-  await expect(mark(page, 'Fixture AI question one', 'Done')).toHaveAttribute('aria-pressed', 'true');
-  expect(await sql(request, 'users', 'SELECT status, rev FROM user_progress')).toEqual([{ status: 'done', rev: 1 }]);
+  await expect(mark(page, 'Fixture AI question one')).toHaveAttribute('data-status', 'revisit');
+  expect((await sql(request, 'users', 'SELECT status FROM user_progress')).map((r) => r.status)).toEqual(['revisit']);
   await other.close();
 });
 
