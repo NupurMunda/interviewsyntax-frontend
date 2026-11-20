@@ -1,4 +1,5 @@
 import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=15';
+import { attachCompany, attachProgress } from './account.js?v=15';
 
 const PAGE_SIZE = 20;
 const slug = location.pathname.split('/')[2] ?? '';
@@ -117,6 +118,7 @@ function dsaPanel(host) {
           const tr = el('tr');
           const title = el('td');
           title.append(link(row.url, row.title));
+          attachProgress(tr, { type: 'company_dsa', id: row.id, title: row.title }, (node) => title.append(node));
           tr.append(title, el('td', row.difficulty ?? '', row.difficulty ?? '—'));
           const topics = el('td');
           topics.append(chips(row.topics));
@@ -163,6 +165,7 @@ function hldPanel(host) {
             solutions.append(el('span', 'mono muted', 'No solution links yet'));
           }
           li.append(solutions);
+          attachProgress(li, { type: 'system_design', id: row.id, title: row.title }, (node) => li.append(node));
           ul.append(li);
         }
       };
@@ -193,6 +196,7 @@ function aiPanel(host) {
             li.append(more);
           }
           if (row.topics.length) li.append(chips(row.topics));
+          attachProgress(li, { type: 'ai', id: row.id, title: row.title }, (node) => li.append(node));
           ul.append(li);
         }
       };
@@ -275,7 +279,9 @@ function render(company) {
   document.title = `${company.name} · InterviewSyntax`;
   const back = el('a', 'back', '← All companies');
   back.href = '/';
-  root.replaceChildren(back, el('h1', null, company.name), profileCard(company.profile));
+  const heading = el('h1', null, company.name);
+  root.replaceChildren(back, heading, profileCard(company.profile));
+  attachCompany(heading, { slug, name: company.name }, (node) => heading.after(node));
 
   const available = CATEGORIES.filter((c) => company.categories[c.key] > 0);
   const card = el('section', 'card');

@@ -18,6 +18,16 @@
   status = 200
 
 [[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
   from = "/sources"
   to = "/sources.html"
   status = 200
@@ -31,6 +41,18 @@
 
 [[redirects]]
   from = "/tests/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tests-e2e/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/playwright.config.mjs"
   to = "/404.html"
   status = 404
   force = true

@@ -1,4 +1,5 @@
 import { $, REDUCED_MOTION, api, el, errorMessage, initTheme, plural, showStatus, track } from './common.js?v=15';
+import './account.js?v=15';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const PAGE_SIZE = 50;

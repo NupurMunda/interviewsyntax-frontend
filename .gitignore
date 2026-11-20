@@ -6,3 +6,5 @@ node_modules/
 reference/
 *.db
 *.pdf
+test-results/
+playwright-report/

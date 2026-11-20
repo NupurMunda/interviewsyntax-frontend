@@ -1,0 +1,69 @@
+/* Sign-in, account menu, progress selectors, dashboard. Loaded only when sign-in is switched on. Uses the site's own tokens. */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { border-color: var(--hard); color: var(--hard); }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+
+/* Header: the account control sits just before the theme button. */
+.acct { position: relative; }
+.acct-btn { width: 36px; height: 36px; padding: 0; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+.acct-btn:hover, .acct-btn[aria-expanded="true"] { border-color: var(--accent); }
+.avatar { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: .02em; }
+.acct-panel {
+  position: fixed; z-index: 30; width: min(300px, calc(100vw - 32px));
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px;
+  box-shadow: 0 10px 30px rgb(20 32 43 / .18);
+}
+.acct-who { font-weight: 700; overflow-wrap: anywhere; }
+.acct-email { overflow-wrap: anywhere; }
+.acct-links { display: flex; flex-direction: column; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.acct-links a, .acct-out { background: none; border: 0; text-align: left; padding: 10px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 600; font-size: 14px; }
+.acct-links a:hover, .acct-out:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* Selectors on question rows. */
+.prog { display: inline-flex; gap: 6px; flex-wrap: wrap; align-self: flex-start; margin-top: 4px; }
+td .prog { display: flex; }
+.prog-btn { font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 6px 12px; min-height: 32px; cursor: pointer; }
+.prog-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.prog-btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.prog-btn[data-value="done"][aria-pressed="true"]::before { content: "✓ "; }
+.prog-btn:disabled { opacity: .55; cursor: default; }
+.prog.pending .prog-btn[aria-pressed="true"] { border-style: dashed; }
+.prog-company { margin-top: 0; }
+@media (pointer: coarse) { .prog-btn { min-height: 40px; padding: 8px 14px; } }
+
+/* Sign-in and confirmation dialogs. */
+.dlg { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); padding: 20px; width: min(420px, calc(100vw - 32px)); }
+.dlg::backdrop { background: rgb(13 20 28 / .55); }
+.dlg[open] { display: flex; flex-direction: column; gap: 12px; }
+.dlg-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.toasts { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; flex-direction: column; gap: 8px; width: min(440px, calc(100vw - 32px)); pointer-events: none; }
+.toast { background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 14px; font-size: 14px; pointer-events: auto; }
+
+/* Dashboard. */
+.totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
+.total { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.total strong { font-size: 24px; background: none; padding: 0; }
+.meter { width: 100%; height: 8px; accent-color: var(--accent); }
+.field-input { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; width: 100%; max-width: 360px; }
+.stack { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+
+/* Google's button: fixed artwork and size (180x40), light or dark to match the theme. */
+.gbtn { display: inline-block; line-height: 0; border-radius: 999px; }
+.gbtn img { display: block; width: 180px; height: 40px; max-width: 100%; }
+.gbtn .g-light { display: var(--logo-light); }
+.gbtn .g-dark { display: var(--logo-dark); }
+
+/* Narrow screens, only while the account control is in the header: logo and controls on one row, the section links
+   on the row below, so nothing is squeezed or hidden. Without sign-in the header is untouched. */
+@media (max-width: 560px) {
+  .top.has-acct { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; column-gap: 8px; row-gap: 6px; }
+  .top.has-acct .brandbox { grid-column: 1; grid-row: 1; min-width: 0; }
+  .top.has-acct .acct, .top.has-acct #signin-open { grid-column: 2; grid-row: 1; }
+  .top.has-acct #theme { grid-column: 3; grid-row: 1; white-space: nowrap; }
+  .top.has-acct .nav { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+}

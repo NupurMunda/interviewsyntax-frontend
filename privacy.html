@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Privacy · InterviewSyntax</title>
+  <meta name="description" content="What InterviewSyntax keeps if you sign in, and how to delete it.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="InterviewSyntax">
+  <meta property="og:title" content="Privacy · InterviewSyntax">
+  <meta property="og:description" content="What InterviewSyntax keeps if you sign in, and how to delete it.">
+  <meta property="og:image" content="https://interviewsyntax.netlify.app/img/interviewsyntax-og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="InterviewSyntax: Interview intelligence, made simple.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Privacy · InterviewSyntax">
+  <meta name="twitter:description" content="What InterviewSyntax keeps if you sign in, and how to delete it.">
+  <meta name="twitter:image" content="https://interviewsyntax.netlify.app/img/interviewsyntax-og.png">
+  <link rel="icon" type="image/png" href="/img/app-icon.png?v=15">
+  <link rel="apple-touch-icon" href="/img/app-icon.png?v=15">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/style.css?v=15">
+  <script src="/js/theme.js?v=15"></script>
+</head>
+<body>
+  <div class="wrap page">
+    <header class="top">
+      <div class="brandbox"><a class="brand" href="/" aria-label="InterviewSyntax home"><img class="logo logo-light" src="/img/logo-light.png?v=15" alt="InterviewSyntax" width="179" height="34"><img class="logo logo-dark" src="/img/logo-dark.png?v=15" alt="" width="179" height="34"></a><span class="tagline">Interview intelligence, made simple.</span></div>
+      <nav class="nav" aria-label="Sections"><a href="/">All companies</a><a href="/prep/ai">AI prep</a><a href="/prep/system-design">System design prep</a></nav>
+      <button id="theme" class="btn small" type="button"></button>
+    </header>
+    <main id="privacy" class="wrap">
+      <h1>Privacy</h1>
+      <p class="muted lead">Browsing InterviewSyntax never needs an account. Signing in is optional and only adds progress tracking.</p>
+      <section class="card prose" aria-labelledby="p-collect">
+        <h2 id="p-collect">What we keep if you sign in</h2>
+        <ul class="steps">
+          <li>Your Google account id (an opaque identifier, not your email) so we can recognise you next time.</li>
+          <li>Your name, and your email if Google says it is verified. These are stored with your sign-in session, not with your account, and are shown in the account menu. They are deleted when you sign out or delete your account. An expired session stops working at once, but its stored record is only removed later by routine cleanup that runs when someone signs in, so your name and email can remain in an expired session record for some time after it expires. We do not keep your Google photo, your contacts or any Google token.</li>
+          <li>What you mark: the status you chose for each question (done or to revisit) and the companies you track, with the time of the change.</li>
+        </ul>
+      </section>
+      <section class="card prose" aria-labelledby="p-cookies">
+        <h2 id="p-cookies">Cookies and browser storage</h2>
+        <ul class="steps">
+          <li>One cookie keeps you signed in, and a short-lived one protects the sign-in step itself. Both are strictly necessary, are not readable by scripts, and are not used for tracking or advertising.</li>
+          <li>Your browser keeps a copy of your progress so pages show it instantly and changes made offline are not lost. The copy is erased when you sign out or delete your account, and is only used for the account it belongs to.</li>
+          <li>The anonymous visit counts we already collect are unchanged: no cookies and no identifiers, only a daily-changing hash.</li>
+        </ul>
+      </section>
+      <section class="card prose" aria-labelledby="p-how">
+        <h2 id="p-how">How long we keep it</h2>
+        <ul class="steps">
+          <li>A sign-in session stops working after 14 days without use, and never lasts longer than 90 days. The stored record of an expired session is removed later, as described above.</li>
+          <li>Your marks and tracked companies stay until you delete your account.</li>
+        </ul>
+      </section>
+      <section class="card prose" aria-labelledby="p-delete">
+        <h2 id="p-delete">Deleting your account</h2>
+        <p>Deleting removes your account, your marks and your tracked companies, and ends every session. To make sure a restored backup cannot bring the account back, we keep a one-way keyed hash of your Google id for up to 37 days; it cannot be turned back into your id or your email.</p>
+        <p>Backups of our database are kept by our hosting provider for a limited time, so deleted data can persist in those backups until they expire. If you ever sign in again after deleting, you start with an empty account.</p>
+        <p>Self-service deletion is not switched on yet. Until it is, ask the site owner to delete your account and quote the support reference shown in your account menu. Contact address: <strong data-contact-placeholder>[PLACEHOLDER: the site owner must add a real contact address before sign-in is switched on]</strong>.</p>
+      </section>
+      <section class="card prose" aria-labelledby="p-google">
+        <h2 id="p-google">Google</h2>
+        <p>Google is the only way to sign in. Google handles your password and sign-in; see Google's own privacy policy for what it records. We ask Google only for your basic profile (name, email, an account id).</p>
+      </section>
+    </main>
+    <footer class="footer">
+      <span>© 2026 InterviewSyntax · <a href="/sources">Sources and licenses</a></span>
+      <span>Interview intelligence, made simple.</span>
+    </footer>
+  </div>
+  <script type="module" src="/js/privacy.js?v=15"></script>
+</body>
+</html>

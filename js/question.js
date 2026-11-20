@@ -1,4 +1,5 @@
 import { $, api, el, errorMessage, initTheme, link, markNav, richText, showStatus, track } from './common.js?v=15';
+import { attachProgress, typeForCategory } from './account.js?v=15';
 
 const id = location.pathname.split('/')[2] ?? '';
 const root = $('question');
@@ -55,12 +56,17 @@ function render(data) {
   markNav(href);
   const back = el('a', 'back', `← ${label}`);
   back.href = href;
-  const parts = [back, el('h1', null, data.title)];
+  const heading = el('h1', null, data.title);
+  const parts = [back, heading];
+  let last = heading;
   if (data.topics.length) {
     const chips = el('div', 'chips');
     for (const t of data.topics) chips.append(el('span', 'chip', t));
     parts.push(chips);
+    last = chips;
   }
+  const type = typeForCategory(data.category);
+  if (type) attachProgress(heading, { type, id: data.id, title: data.title }, (node) => last.after(node));
   if (!data.answer) {
     const note = el('div', 'card');
     note.append(el('p', 'muted', 'No written answer for this question yet.'));

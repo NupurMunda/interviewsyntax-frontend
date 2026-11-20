@@ -1,4 +1,5 @@
 import { $, api, el, errorMessage, initTheme, link, showStatus, track } from './common.js?v=15';
+import './account.js?v=15';
 
 const root = $('sources');
 

@@ -1,4 +1,5 @@
 import { $, api, el, errorMessage, formatDay, initTheme, isRecent, link, markNav, plural, showStatus, track } from './common.js?v=15';
+import { attachCompany, attachProgress } from './account.js?v=15';
 
 const PAGE_SIZE = 50;
 const SECTIONS = {
@@ -46,6 +47,7 @@ function titleRow(item, titleNode) {
 
 function linkedQuestion(item) {
   const li = el('li');
+  attachProgress(li, { type: 'system_design', id: item.id, title: item.title }, (node) => li.append(node));
   li.append(titleRow(item, el('span', 'qtitle', item.title)));
   if (item.summary) li.append(el('p', 'muted qsum', item.summary));
   if (item.concepts.length) {
@@ -77,6 +79,7 @@ function questionItem(item) {
   for (const t of item.topics) meta.append(el('span', 'chip', t));
   if (item.written) meta.append(el('span', 'muted small', `Added ${formatDay(item.written)}`));
   if (meta.children.length) li.append(meta);
+  attachProgress(li, { type: 'ai', id: item.id, title: item.title }, (node) => li.append(node));
   return li;
 }
 
