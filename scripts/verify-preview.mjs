@@ -28,7 +28,7 @@ export async function verify(base, { startSignIn = false } = {}) {
   check(hasAll(home.headers.get('content-security-policy'), "default-src 'self'"), 'the content security policy is sent', String(home.headers.get('content-security-policy')));
 
   // --- nothing that is not a page can be downloaded ---
-  for (const path of ['/netlify/functions/private.mjs', '/netlify/functions/api.mjs', '/tests/private.test.mjs', '/tests-e2e/server.mjs', '/playwright.config.mjs', '/playwright.real.config.mjs', '/package.json', '/package-lock.json', '/netlify.toml', '/.env', '/.env.example', '/.git/config', '/.gitignore', '/node_modules/x', '/README.md', '/ARCHITECTURE.md']) {
+  for (const path of ['/netlify/functions/private.mjs', '/netlify/functions/api.mjs', '/tests/private.test.mjs', '/tests-e2e/server.mjs', '/scripts/verify-preview.mjs', '/playwright.config.mjs', '/playwright.real.config.mjs', '/package.json', '/package-lock.json', '/netlify.toml', '/.env', '/.env.example', '/.git/config', '/.gitignore', '/node_modules/x', '/README.md', '/ARCHITECTURE.md']) {
     const r = await get(base, path);
     check(r.status === 404, `${path} is not downloadable`, `status ${r.status}`);
   }

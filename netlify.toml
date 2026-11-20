@@ -70,6 +70,12 @@
   force = true
 
 [[redirects]]
+  from = "/scripts/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
   from = "/playwright.real.config.mjs"
   to = "/404.html"
   status = 404
