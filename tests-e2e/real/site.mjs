@@ -54,7 +54,7 @@ function authorize(url, res) {
     return `<li><a href="/__idp/approve?${esc(next)}">${esc(a.name)} (${esc(a.email)})</a></li>`;
   }).join('');
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(`<!doctype html><title>Local Google</title><h1>Choose an account</h1><p>Local test provider.</p><ul>${links}</ul><p><a href="${esc(q.get('redirect_uri'))}?error=access_denied&state=${esc(q.get('state'))}">Cancel</a></p>`);
+  res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Local Google</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f1f3f4;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#202124}main{width:min(420px,92vw);background:#fff;border:1px solid #dadce0;border-radius:12px;padding:32px 28px;box-shadow:0 1px 3px rgba(60,64,67,.15)}h1{margin:0 0 4px;font-size:24px;font-weight:500}p{margin:0 0 20px;color:#5f6368;font-size:14px}ul{list-style:none;margin:0 0 16px;padding:0}li+li{margin-top:8px}li a{display:block;padding:12px 14px;border:1px solid #dadce0;border-radius:8px;color:#1a73e8;text-decoration:none}li a:hover,li a:focus-visible{background:#e8f0fe;border-color:#1a73e8;outline:none}.cancel{font-size:14px;margin:0}.cancel a{color:#5f6368}</style><main><h1>Choose an account</h1><p>Local test provider. Nothing here is real Google.</p><ul>${links}</ul><p class="cancel"><a href="${esc(q.get('redirect_uri'))}?error=access_denied&state=${esc(q.get('state'))}">Cancel</a></p></main>`);
 }
 
 function approve(url, res) {
