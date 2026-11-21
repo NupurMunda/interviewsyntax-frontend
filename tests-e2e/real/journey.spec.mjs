@@ -60,6 +60,16 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   await expect(acme).toContainText('Tracked');
   await expect(acme).toContainText('1 /');
 
+  // 4b. Analytics: this one person is counted (aggregates only), and only the admin password opens the report.
+  const report = 'http://127.0.0.1:8811/admin/users.json';
+  expect((await request.get(report)).status()).toBe(401);
+  const body = await (await request.get(report, { headers: { authorization: `Basic ${Buffer.from('founder:e2e-admin-password').toString('base64')}` } })).json();
+  expect(body.metrics.registrations).toMatchObject({ total: 1, currentAccounts: 1, today: 1 });
+  expect(body.metrics.active).toMatchObject({ dauToday: 1, wau: 1, mau: 1 });
+  expect(body.metrics.usage.last7).toMatchObject({ markedDone: 2, markedRevisit: 2, companiesTracked: 1, dashboardUsers: 1 });
+  expect(body.metrics.usage.last7.dashboardOpens).toBeGreaterThanOrEqual(1);
+  expect(JSON.stringify(body)).not.toMatch(/ada@example|Ada Lovelace|ref-|@/);
+
   // 5. "Browser restart": a brand new browser context that has only the saved cookie (no local copy of anything).
   const saved = (await context.storageState()).cookies;
   const restarted = await browser.newContext({ viewport: page.viewportSize() });

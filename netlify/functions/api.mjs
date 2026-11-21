@@ -49,6 +49,10 @@ async function handle(request, context) {
   const headers = { Accept: 'application/json' };
   if (process.env.API_KEY) headers['x-api-key'] = process.env.API_KEY;
   if (context.ip) headers['x-client-ip'] = context.ip;
+  // Only the usage ping gets the browser's user agent, so the backend can set aside crawlers and monitors. It is used for that one
+  // decision and never stored.
+  const agent = url.pathname === '/api/v1/ping' ? request.headers.get('user-agent') : null;
+  if (agent) headers['x-client-ua'] = agent.slice(0, 200);
 
   let response, body;
   try {

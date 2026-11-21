@@ -23,6 +23,7 @@ export const idp = (request, data = {}) => request.post(`${SITE}/__test/idp`, { 
 export async function clean(request) {
   await sql(request, 'users', 'DELETE FROM users');
   await sql(request, 'users', 'DELETE FROM oauth_attempts');
+  await sql(request, 'users', 'DELETE FROM activity_daily');
   await sql(request, 'users', 'DELETE FROM deletion_ledger');
   await sql(request, 'content', 'DELETE FROM deletion_ledger');
   await idp(request, { reset: true });

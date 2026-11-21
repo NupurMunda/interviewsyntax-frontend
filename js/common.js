@@ -69,7 +69,7 @@ function showSavedNotice() {
 // Tells the backend what a visitor did (page viewed, category opened, request failed) so we can see usage.
 // Anonymous: no cookies, nothing stored in the browser, and the backend keeps only a daily-changing hash.
 export function track(fields) {
-  if (globalThis.navigator?.doNotTrack === '1') return;
+  if (globalThis.navigator?.doNotTrack === '1' || globalThis.navigator?.webdriver) return; // opted out, or an automated browser
   fetch(`/api/v1/ping?${new URLSearchParams(fields)}`, { keepalive: true }).catch(() => {});
 }
 

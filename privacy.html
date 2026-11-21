@@ -42,14 +42,17 @@
           <li>Your Google account id (an opaque identifier, not your email) so we can recognise you next time.</li>
           <li>Your name, and your email if Google says it is verified. These are stored with your sign-in session, not with your account, and are shown in the account menu. They are deleted when you sign out or delete your account. An expired session stops working at once, but its stored record is only removed later by routine cleanup that runs when someone signs in, so your name and email can remain in an expired session record for some time after it expires. We do not keep your Google photo, your contacts or any Google token.</li>
           <li>What you mark: the status you chose for each question (done or to revisit) and the companies you track, with the time of the change.</li>
+          <li>A simple activity record, so we can tell how many people use the site and come back: for each day you were active (you signed in, or used the site while signed in), the date and four counts: how many times you set a question to Done or to Revisit, tracked a company, and opened your dashboard. It records how many, never which questions or companies, and it is linked only to your account&rsquo;s internal number, not to your name or email.</li>
+          <li>A plain count of accounts created each day. It has no identity in it, so it stays even after an account is deleted.</li>
         </ul>
+        <p>We use the activity record only to produce totals and percentages for the site owner (for example how many people were active this week, or how many came back after a week). Nobody looks at an individual&rsquo;s activity or progress in those reports.</p>
       </section>
       <section class="card prose" aria-labelledby="p-cookies">
         <h2 id="p-cookies">Cookies and browser storage</h2>
         <ul class="steps">
           <li>One cookie keeps you signed in, and a short-lived one protects the sign-in step itself. Both are strictly necessary, are not readable by scripts, and are not used for tracking or advertising.</li>
           <li>Your browser keeps a copy of your progress so pages show it instantly and changes made offline are not lost. The copy is erased when you sign out or delete your account, and is only used for the account it belongs to.</li>
-          <li>The anonymous visit counts we already collect are unchanged: no cookies and no identifiers, only a daily-changing hash.</li>
+          <li>The anonymous visit counts need no cookie and no identifier of yours: a visit is a hash that changes every day, so one day&rsquo;s visits cannot be linked to another&rsquo;s. Visits from programs that look automated, such as search crawlers and monitors, are set aside. We also count, anonymously and without tying it to a visitor, how many sign-ins are started, completed or cancelled. Your browser&rsquo;s &ldquo;Do Not Track&rdquo; setting is respected.</li>
         </ul>
       </section>
       <section class="card prose" aria-labelledby="p-how">
@@ -57,11 +60,12 @@
         <ul class="steps">
           <li>A sign-in session stops working after 14 days without use, and never lasts longer than 90 days. The stored record of an expired session is removed later, as described above.</li>
           <li>Your marks and tracked companies stay until you delete your account.</li>
+          <li>Your activity record is kept for 13 months. After that the days are combined into daily totals that contain no account numbers (for example &ldquo;120 people were active that day&rdquo;) and the individual records are deleted. If you delete your account, your activity record is deleted with it.</li>
         </ul>
       </section>
       <section class="card prose" aria-labelledby="p-delete">
         <h2 id="p-delete">Deleting your account</h2>
-        <p>Deleting removes your account, your marks and your tracked companies, and ends every session. To make sure a restored backup cannot bring the account back, we keep a one-way keyed hash of your Google id for up to 37 days; it cannot be turned back into your id or your email.</p>
+        <p>Deleting removes your account, your marks, your tracked companies and your activity record, and ends every session. To make sure a restored backup cannot bring the account back, we keep a one-way keyed hash of your Google id for up to 37 days; it cannot be turned back into your id or your email.</p>
         <p>Backups of our database are kept by our hosting provider for a limited time, so deleted data can persist in those backups until they expire. If you ever sign in again after deleting, you start with an empty account.</p>
         <p>Self-service deletion is not switched on yet. Until it is, ask the site owner to delete your account and quote the support reference shown in your account menu. Contact address: <strong data-contact-placeholder>[PLACEHOLDER: the site owner must add a real contact address before sign-in is switched on]</strong>.</p>
       </section>

@@ -22,6 +22,25 @@ describe('privacy page contact address', () => {
     assert.doesNotMatch(page, /removed when the session ends/);
   });
 
+  it('explains the activity record: what it holds, what it is for, how long it is kept, and that deletion removes it', () => {
+    const text = page.replace(/<[^>]+>/g, ' ').replace(/&rsquo;/g, "'").replace(/\s+/g, ' ');
+    assert.match(text, /activity record/);
+    assert.match(text, /how many times you set a question to Done or to Revisit, tracked a company, and opened your dashboard/);
+    assert.match(text, /never which questions or companies/);
+    assert.match(text, /kept for 13 months/);
+    assert.match(text, /combined into daily totals that contain no account numbers/);
+    assert.match(text, /your activity record is deleted with it/);
+    assert.match(text, /Deleting removes your account, your marks, your tracked companies and your activity record/);
+  });
+
+  it('describes the anonymous visit counts as they now work, without promising more than they do', () => {
+    const text = page.replace(/<[^>]+>/g, ' ').replace(/&rsquo;/g, "'").replace(/\s+/g, ' ');
+    assert.match(text, /changes every day, so one day's visits cannot be linked/);
+    assert.match(text, /automated, such as search crawlers and monitors, are set aside/);
+    assert.match(text, /Do Not Track/);
+    assert.doesNotMatch(text, /unchanged/);
+  });
+
   it('says deleted data can persist in backups', () => {
     assert.match(page, /deleted data can persist in those backups until they expire/);
   });

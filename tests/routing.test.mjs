@@ -23,6 +23,12 @@ test('no redirect competes with the private routes or the public API', () => {
   }
 });
 
+test('nothing on the site proxies or rewrites the founder-only report paths', () => {
+  for (const path of ['/admin', '/admin/users', '/admin/users.json', '/api/admin/users']) {
+    assert.equal(covering(path).filter((r) => r.status === 200).length, 0, `${path} must not be rewritten to anything`);
+  }
+});
+
 test('the functions answer exactly the paths the site relies on', async () => {
   const { config: privateConfig } = await import('../netlify/functions/private.mjs');
   const { config: apiConfig } = await import('../netlify/functions/api.mjs');

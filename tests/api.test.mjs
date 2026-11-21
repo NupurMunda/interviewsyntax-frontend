@@ -36,6 +36,33 @@ describe('tracking ping', () => {
   });
 });
 
+describe('tracking ping and the browser user agent', () => {
+  const withAgent = (path, agent) => handler(new Request(`https://site.test${path}`, { headers: agent ? { 'user-agent': agent } : {} }), { ip: '203.0.113.5' });
+
+  it('forwards the user agent (shortened) to the ping only, so the backend can set aside crawlers', async () => {
+    await withAgent('/api/v1/ping?kind=view&page=home', 'Mozilla/5.0 Chrome/130 ' + 'x'.repeat(400));
+    assert.equal(calls[0].init.headers['x-client-ua'].length, 200);
+    assert.match(calls[0].init.headers['x-client-ua'], /^Mozilla\/5\.0 Chrome\/130/);
+  });
+
+  it('does not forward it for any other request, and sends nothing when there is none', async () => {
+    await withAgent('/api/v1/companies', 'Mozilla/5.0 Chrome/130');
+    await withAgent('/api/v1/ping?kind=view&page=home');
+    assert.equal(calls[0].init.headers['x-client-ua'], undefined);
+    assert.equal(calls[1].init.headers['x-client-ua'], undefined);
+  });
+});
+
+describe('the founder-only report is never reachable through the site', () => {
+  it('answers 404 for the admin report paths without contacting the backend', async () => {
+    for (const path of ['/api/admin', '/api/admin/users', '/api/admin/users.json', '/api/v1/admin/users', '/api/../admin/users']) {
+      const res = await get(path);
+      assert.equal(res.status, 404, path);
+    }
+    assert.equal(calls.length, 0);
+  });
+});
+
 describe('logging', () => {
   it('logs path, status and time without IPs, keys or query values', async () => {
     const lines = [];

@@ -112,6 +112,21 @@ describe('tracking', () => {
   });
 });
 
+describe('tracking by automated browsers', () => {
+  it('sends nothing from a browser that says it is automated (navigator.webdriver)', async () => {
+    const { track } = await import('../js/common.js');
+    const urls = [];
+    globalThis.fetch = async (url) => { urls.push(String(url)); return reply(); };
+    Object.defineProperty(globalThis, 'navigator', { value: { webdriver: true }, configurable: true });
+    try {
+      track({ kind: 'view', page: 'home' });
+    } finally {
+      delete globalThis.navigator;
+    }
+    assert.deepEqual(urls, []);
+  });
+});
+
 describe('rich text', () => {
   const node = (tag) => ({ tag, children: [], className: '', textContent: '', append(...kids) { this.children.push(...kids); } });
   const describeTree = (n) => (typeof n === 'string' ? n : `${n.tag}(${n.textContent || n.children.map(describeTree).join('')})`);
