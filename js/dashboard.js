@@ -28,7 +28,7 @@ function companiesCard(companies, partial, breakdownMarks) {
   card.append(el('h2', null, 'Companies you follow'));
   if (partial) card.append(el('p', 'muted', `Company counts below use your ${Number(breakdownMarks) || 500} most recent marks. The totals above count all of them.`));
   if (!companies.length) {
-    card.append(el('p', 'muted', 'No companies yet. Open a company and choose “Track company”, or mark a question and its companies appear here.'));
+    card.append(el('p', 'muted', 'You are not tracking any companies yet. Open a company and choose “Track company” to follow it here.'));
     return card;
   }
   const wrap = el('div', 'table-wrap');
@@ -44,7 +44,6 @@ function companiesCard(companies, partial, breakdownMarks) {
     const a = el('a', null, c.name);
     a.href = `/c/${encodeURIComponent(c.slug)}`;
     name.append(a);
-    if (c.tracked) name.append(' ', el('span', 'badge', 'Tracked'));
     tr.append(name);
     for (const part of [c.dsa, c.hld, c.ai]) tr.append(el('td', 'mono', `${part.done} / ${part.total}`));
     body.append(tr);
