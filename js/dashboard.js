@@ -1,4 +1,4 @@
-import { $, el, initTheme, showLoading, showStatus } from './common.js?v=15';
+import { $, el, initTheme, link, showLoading, showStatus } from './common.js?v=15';
 import { announce, authState, googleButton, loadStyles, privateFetch, signInUrl, sync, whenAuth } from './account.js?v=15';
 
 const root = $('dashboard');
@@ -7,7 +7,27 @@ const TOTALS = [
   ['ai', 'AI questions'],
   ['system_design', 'System design questions'],
 ];
+// What the lower part of the page can show; Companies is the default.
+const VIEWS = [
+  ['companies', 'Companies you follow'],
+  ['company_dsa', 'Coding problems'],
+  ['ai', 'AI questions'],
+  ['system_design', 'System design questions'],
+];
+const EMPTY = {
+  company_dsa: 'You have not marked any coding problems yet. Mark one Done or Revisit on a company page and it appears here.',
+  ai: 'You have not marked any AI questions yet. Mark one Done or Revisit on the AI prep page and it appears here.',
+  system_design: 'You have not marked any system design questions yet. Mark one Done or Revisit on the system design page and it appears here.',
+};
 const PHRASE = 'delete my account';
+
+function companiesTotal(count) {
+  const card = el('div', 'total');
+  card.append(el('span', 'muted small', 'Companies you follow'));
+  card.append(el('strong', null, String(count)));
+  card.append(el('span', 'muted small', count === 1 ? 'tracked company' : 'tracked companies'));
+  return card;
+}
 
 function totalCard([key, label], t) {
   const card = el('div', 'total');
@@ -22,10 +42,98 @@ function totalCard([key, label], t) {
   return card;
 }
 
+// ---- the person's marked questions of one kind (Done and Revisit), 25 a page, newest first ---------------------------------
+function markRow(item) {
+  const li = el('li');
+  const head = el('div', 'qhead');
+  let title;
+  if (item.page) { title = el('a', 'qlink', item.title); title.href = item.page; }
+  else if (item.url) title = link(item.url, item.title, 'qlink');
+  else title = el('span', 'qlink', item.title);
+  head.append(title, el('span', item.status === 'done' ? 'badge' : 'chip', item.status === 'done' ? 'Done' : 'Revisit'));
+  li.append(head);
+  return li;
+}
+
+function marksPanel(host, type) {
+  const filter = el('select', 'select');
+  for (const [value, text] of [['all', 'Done and Revisit'], ['done', 'Done'], ['revisit', 'Revisit']]) {
+    const option = el('option', null, text);
+    option.value = value;
+    filter.append(option);
+  }
+  const field = el('label', 'field', 'Show');
+  field.append(filter);
+  const controls = el('div', 'controls');
+  controls.append(field);
+  const list = el('ul', 'qs');
+  const status = el('div');
+  const more = el('button', 'btn', 'Load more');
+  more.type = 'button';
+  more.hidden = true;
+  host.replaceChildren(controls, list, status, more);
+  let page = 0;
+  let run = 0;
+
+  async function next() {
+    const mine = run;
+    more.disabled = true;
+    if (page === 0) showLoading(status, 'Loading…'); else showStatus(status, 'Loading…');
+    try {
+      const response = await privateFetch(`/me/marks?type=${type}&status=${filter.value}&page=${page + 1}`);
+      if (mine !== run) return;
+      if (response.status === 401) { showStatus(status, 'Your session has ended. Sign in again to see your questions.'); more.hidden = true; return; }
+      if (!response.ok) throw new Error(String(response.status));
+      const { items, hasMore } = (await response.json()).data;
+      if (mine !== run) return;
+      page += 1;
+      status.replaceChildren();
+      for (const item of items) list.append(markRow(item));
+      if (!list.children.length) showStatus(status, filter.value === 'all' ? EMPTY[type] : 'Nothing here with that status yet.');
+      more.hidden = !hasMore;
+    } catch {
+      if (mine !== run) return;
+      showStatus(status, 'This list is temporarily unavailable. Your progress is safe.', next);
+      more.hidden = true;
+    } finally {
+      if (mine === run) more.disabled = false;
+    }
+  }
+
+  function restart() { run += 1; page = 0; list.replaceChildren(); more.hidden = true; next(); }
+  filter.addEventListener('change', restart);
+  more.addEventListener('click', next);
+  restart();
+}
+
+// The lower part of the page: a switch between the companies table and the marked questions of each kind.
+function viewCard(data) {
+  const card = el('section', 'card');
+  const field = el('label', 'field', 'View');
+  const select = el('select', 'select');
+  for (const [value, text] of VIEWS) {
+    const option = el('option', null, text);
+    option.value = value;
+    select.append(option);
+  }
+  field.append(select);
+  const panel = el('div', 'wrap');
+  const show = (key) => {
+    history.replaceState(null, '', `#${key}`);
+    if (key === 'companies') panel.replaceChildren(companiesCard(data.companies, data.partial === true, data.breakdownMarks));
+    else marksPanel(panel, key);
+  };
+  const wanted = location.hash.slice(1);
+  select.value = VIEWS.some(([key]) => key === wanted) ? wanted : 'companies';
+  select.addEventListener('change', () => show(select.value));
+  card.append(field, panel);
+  show(select.value);
+  return card;
+}
+
 // partial: the account has more marks than the breakdown covers, so the table counts the most recent ones (the totals above count every mark).
 function companiesCard(companies, partial, breakdownMarks) {
-  const card = el('section', 'card');
-  card.append(el('h2', null, 'Companies you follow'));
+  const card = el('div');
   if (partial) card.append(el('p', 'muted', `Company counts below use your ${Number(breakdownMarks) || 500} most recent marks. The totals above count all of them.`));
   if (!companies.length) {
     card.append(el('p', 'muted', 'You are not tracking any companies yet. Open a company and choose “Track company” to follow it here.'));
@@ -172,8 +280,9 @@ async function render() {
   }
   const totals = el('section', 'totals');
   totals.setAttribute('aria-label', 'Totals');
+  totals.append(companiesTotal(data.companies.length));
   for (const entry of TOTALS) totals.append(totalCard(entry, data.totals[entry[0]]));
-  holder.replaceChildren(totals, companiesCard(data.companies, data.partial === true, data.breakdownMarks), deletionCard(authState().user));
+  holder.replaceChildren(totals, viewCard(data), deletionCard(authState().user));
 }
 
 initTheme();

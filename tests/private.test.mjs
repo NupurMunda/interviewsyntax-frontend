@@ -50,7 +50,7 @@ describe('routes and methods', () => {
     ['GET', '/auth/google', '/v1/auth/google'], ['GET', '/auth/callback', '/v1/auth/callback'],
     ['POST', '/auth/logout', '/v1/auth/logout'], ['POST', '/auth/reauth', '/v1/auth/reauth'],
     ['GET', '/me', '/v1/me'], ['DELETE', '/me', '/v1/me'], ['GET', '/me/progress', '/v1/me/progress'], ['PUT', '/me/progress', '/v1/me/progress'],
-    ['GET', '/me/companies', '/v1/me/companies'], ['PUT', '/me/companies/acme-corp', '/v1/me/companies/acme-corp'], ['GET', '/me/dashboard', '/v1/me/dashboard'],
+    ['GET', '/me/companies', '/v1/me/companies'], ['PUT', '/me/companies/acme-corp', '/v1/me/companies/acme-corp'], ['GET', '/me/dashboard', '/v1/me/dashboard'], ['GET', '/me/marks', '/v1/me/marks'],
   ];
   it('maps each allowed route to its Worker path, and nothing else', async () => {
     for (const [method, path, upstream] of ok) {

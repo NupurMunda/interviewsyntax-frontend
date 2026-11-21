@@ -38,6 +38,7 @@ const ROUTES = [
   { label: '/me/progress', method: 'PUT', path: /^\/me\/progress$/, upstream: '/v1/me/progress', body: true, session: 'required' },
   { label: '/me/companies', method: 'GET', path: /^\/me\/companies$/, upstream: '/v1/me/companies', session: 'required' },
   { label: '/me/companies/:slug', method: 'PUT', path: new RegExp(`^/me/companies/(${SLUG})$`), upstream: '/v1/me/companies/', body: true, session: 'required', slug: true },
+  { label: '/me/marks', method: 'GET', path: /^\/me\/marks$/, upstream: '/v1/me/marks', session: 'required', query: ['type', 'status', 'page'] },
   { label: '/me/dashboard', method: 'GET', path: /^\/me\/dashboard$/, upstream: '/v1/me/dashboard', session: 'required' },
 ];
 
