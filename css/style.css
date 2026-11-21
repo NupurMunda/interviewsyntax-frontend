@@ -163,10 +163,11 @@ pre { margin: 8px 0 0; padding: 12px; background: var(--bg); border-radius: 8px;
 .badge { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; }
 .qs li > .badge { align-self: flex-start; }
 
-/* Loading spinner: a ring with code symbols cycling inside it. Pure CSS (the site's CSP allows no inline styles). */
-/* It covers the page with a translucent veil and sits in the middle; it goes away when the content replaces it. The short delay keeps fast loads from flashing it. */
-.loading { position: fixed; inset: 0; z-index: 60; margin: 0; border: 0; border-radius: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(128, 138, 150, .35); background: color-mix(in srgb, var(--bg) 72%, transparent); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: load-in .25s ease .2s both; }
-.loading-text { font-family: var(--f-mono); font-size: 14px; letter-spacing: .02em; color: var(--ink); }
+/* Loading: showLoading() leaves a screen-reader-only note (.loading); one shared veil (.veil, built in js/common.js) shows the spinner
+   over the page while any note exists. Pure CSS (the site's CSP allows no inline styles). The short delay keeps fast loads from flashing it. */
+.loading { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.veil { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(128, 138, 150, .35); background: color-mix(in srgb, var(--bg) 72%, transparent); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: load-in .25s ease .2s both; }
+.veil-text { font-family: var(--f-mono); font-size: 14px; letter-spacing: .02em; color: var(--ink); }
 @keyframes load-in { from { opacity: 0; } to { opacity: 1; } }
 .spin { position: relative; flex: none; width: 64px; height: 64px; display: grid; place-items: center; font-family: var(--f-mono); font-weight: 700; font-size: 17px; color: var(--accent); }
 .spin::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); border-right-color: var(--accent); animation: spin-ring 1s linear infinite; }
