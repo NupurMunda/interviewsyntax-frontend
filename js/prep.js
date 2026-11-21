@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, formatDay, initTheme, isRecent, link, markNav, plural, showStatus, track } from './common.js?v=15';
+import { $, api, el, errorMessage, formatDay, initTheme, isRecent, link, markNav, plural, showLoading, showStatus, track } from './common.js?v=15';
 import { attachCompany, attachProgress } from './account.js?v=15';
 
 const PAGE_SIZE = 50;
@@ -90,7 +90,7 @@ async function load() {
     return;
   }
   document.title = `${section.title} · InterviewSyntax`;
-  showStatus(root, 'Loading…');
+  showLoading(root, 'Loading…');
   let first;
   try {
     first = await api(`prep/${kind}`, { limit: PAGE_SIZE });

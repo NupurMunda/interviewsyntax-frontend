@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, showStatus, track } from './common.js?v=15';
+import { $, api, el, errorMessage, initTheme, link, showLoading, showStatus, track } from './common.js?v=15';
 import './account.js?v=15';
 
 const root = $('sources');
@@ -25,7 +25,7 @@ function sourceCard(source) {
 }
 
 async function load() {
-  showStatus(root, 'Loading…');
+  showLoading(root, 'Loading…');
   try {
     const { data } = await api('sources');
     if (!data.length) {

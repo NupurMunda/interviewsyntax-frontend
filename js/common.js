@@ -121,6 +121,18 @@ export function showStatus(container, text, onRetry) {
   }
 }
 
+// The spinner is pure CSS (css/style.css, .loading): a ring with code symbols cycling inside. The visible words stay for screen readers.
+const LOADING_GLYPHS = ['{ }', '</>', '[ ]', '01', 'λ', '#'];
+export function showLoading(container, text) {
+  const note = el('p', 'note loading');
+  note.setAttribute('role', 'status');
+  const spin = el('span', 'spin');
+  spin.setAttribute('aria-hidden', 'true');
+  for (const glyph of LOADING_GLYPHS) spin.append(el('span', null, glyph));
+  note.append(spin, el('span', 'loading-text', text));
+  container.replaceChildren(note);
+}
+
 export function safeUrl(value) {
   if (typeof value !== 'string' || !value.startsWith('https://')) return null;
   try {

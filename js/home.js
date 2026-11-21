@@ -1,4 +1,4 @@
-import { $, REDUCED_MOTION, api, el, errorMessage, initTheme, plural, showStatus, track } from './common.js?v=15';
+import { $, REDUCED_MOTION, api, el, errorMessage, initTheme, plural, showLoading, showStatus, track } from './common.js?v=15';
 import './account.js?v=15';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -285,7 +285,7 @@ addEventListener('resize', () => {
 });
 
 async function load() {
-  showStatus($('message'), 'Loading companies…');
+  showLoading($('message'), 'Loading companies…');
   try {
     const [graph, first] = await Promise.all([api('graph', { limit: 60 }), api('companies', { limit: PAGE_SIZE })]);
     const rest = await Promise.all(

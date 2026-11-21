@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, markNav, richText, showStatus, track } from './common.js?v=15';
+import { $, api, el, errorMessage, initTheme, link, markNav, richText, showLoading, showStatus, track } from './common.js?v=15';
 import { attachProgress, typeForCategory } from './account.js?v=15';
 
 const id = location.pathname.split('/')[2] ?? '';
@@ -104,7 +104,7 @@ function render(data) {
 }
 
 async function load() {
-  showStatus(root, 'Loading…');
+  showLoading(root, 'Loading…');
   try {
     const { data } = await api(`resources/${id}`);
     track({ kind: 'view', page: 'question', category: data.category });

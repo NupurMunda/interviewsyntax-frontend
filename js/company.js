@@ -1,4 +1,4 @@
-import { $, api, el, errorMessage, initTheme, link, plural, showStatus, track } from './common.js?v=15';
+import { $, api, el, errorMessage, initTheme, link, plural, showLoading, showStatus, track } from './common.js?v=15';
 import { attachCompany, attachProgress } from './account.js?v=15';
 
 const PAGE_SIZE = 20;
@@ -50,7 +50,7 @@ function pager(host, { fetchPage, build, emptyText, onMeta }) {
   async function next() {
     const mine = run;
     more.disabled = true;
-    showStatus(status, 'Loading…');
+    showLoading(status, 'Loading…');
     try {
       const result = await fetchPage(page + 1);
       if (mine !== run) return;
@@ -210,7 +210,7 @@ function aiPanel(host) {
 }
 
 async function behavioralPanel(host) {
-  showStatus(host, 'Loading…');
+  showLoading(host, 'Loading…');
   try {
     const { data } = await api(`companies/${encodeURIComponent(slug)}/behavioral`);
     if (!data.values.length && !data.topics.length) {
@@ -310,7 +310,7 @@ function render(company) {
 }
 
 async function load() {
-  showStatus(root, 'Loading…');
+  showLoading(root, 'Loading…');
   try {
     const { data } = await api(`companies/${encodeURIComponent(slug)}`);
     track({ kind: 'view', page: 'company', company: slug });
