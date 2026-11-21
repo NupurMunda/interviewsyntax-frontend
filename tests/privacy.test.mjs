@@ -18,7 +18,9 @@ describe('privacy page contact address', () => {
   });
 
   it('states the actual session record lifecycle rather than promising prompt removal', () => {
-    assert.match(page, /removed later by routine cleanup/);
+    assert.match(page, /removed afterwards by routine cleanup, which runs every 15 minutes and whenever someone signs in/);
+    assert.match(page, /Signing out deletes the record for that sign-in on that device, and deleting your account deletes the records for every device/);
+    assert.match(page, /Your name and email are not kept in your browser/);
     assert.doesNotMatch(page, /removed when the session ends/);
   });
 
@@ -39,6 +41,12 @@ describe('privacy page contact address', () => {
     assert.match(text, /automated, such as search crawlers and monitors, are set aside/);
     assert.match(text, /Do Not Track/);
     assert.doesNotMatch(text, /unchanged/);
+  });
+
+  it('describes the browser copy as it behaves: erased on sign-out or deletion, kept when a session just ends', () => {
+    const text = page.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    assert.match(text, /The copy is erased when you sign out or delete your account\. If your session ends without you signing out \(for example because it expired\), the copy stays on that device/);
+    assert.match(text, /used again only if you sign back in to the same account/);
   });
 
   it('says deleted data can persist in backups', () => {
