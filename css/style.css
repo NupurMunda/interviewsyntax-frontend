@@ -164,9 +164,11 @@ pre { margin: 8px 0 0; padding: 12px; background: var(--bg); border-radius: 8px;
 .qs li > .badge { align-self: flex-start; }
 
 /* Loading spinner: a ring with code symbols cycling inside it. Pure CSS (the site's CSP allows no inline styles). */
-.loading { display: flex; align-items: center; gap: 14px; border-style: solid; padding: 14px 16px; }
-.loading-text { font-family: var(--f-mono); letter-spacing: .02em; }
-.spin { position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center; font-family: var(--f-mono); font-weight: 700; font-size: 13px; color: var(--accent); }
+/* It covers the page with a translucent veil and sits in the middle; it goes away when the content replaces it. The short delay keeps fast loads from flashing it. */
+.loading { position: fixed; inset: 0; z-index: 60; margin: 0; border: 0; border-radius: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(128, 138, 150, .35); background: color-mix(in srgb, var(--bg) 72%, transparent); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: load-in .25s ease .2s both; }
+.loading-text { font-family: var(--f-mono); font-size: 14px; letter-spacing: .02em; color: var(--ink); }
+@keyframes load-in { from { opacity: 0; } to { opacity: 1; } }
+.spin { position: relative; flex: none; width: 64px; height: 64px; display: grid; place-items: center; font-family: var(--f-mono); font-weight: 700; font-size: 17px; color: var(--accent); }
 .spin::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); border-right-color: var(--accent); animation: spin-ring 1s linear infinite; }
 .spin > span { position: absolute; opacity: 0; animation: spin-glyph 4.8s infinite; }
 .spin > span:nth-child(1) { animation-delay: 0s; }
