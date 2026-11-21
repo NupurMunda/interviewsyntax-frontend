@@ -7,13 +7,13 @@ const TOTALS = [
   ['ai', 'AI questions'],
   ['system_design', 'System design questions'],
 ];
-// What the lower part of the page can show; Companies is the default.
-const VIEWS = [
-  ['companies', 'Companies you follow'],
-  ['company_dsa', 'Coding problems'],
-  ['ai', 'AI questions'],
-  ['system_design', 'System design questions'],
-];
+// The four summary boxes are the switch: each shows its own list below. Companies is the default.
+const HEADINGS = {
+  companies: 'Companies you follow',
+  company_dsa: 'Coding problems you marked',
+  ai: 'AI questions you marked',
+  system_design: 'System design questions you marked',
+};
 const EMPTY = {
   company_dsa: 'You have not marked any coding problems yet. Mark one Done or Revisit on a company page and it appears here.',
   ai: 'You have not marked any AI questions yet. Mark one Done or Revisit on the AI prep page and it appears here.',
@@ -22,7 +22,8 @@ const EMPTY = {
 const PHRASE = 'delete my account';
 
 function companiesTotal(count) {
-  const card = el('div', 'total');
+  const card = el('button', 'total');
+  card.type = 'button';
   card.append(el('span', 'muted small', 'Companies you follow'));
   card.append(el('strong', null, String(count)));
   card.append(el('span', 'muted small', count === 1 ? 'tracked company' : 'tracked companies'));
@@ -30,7 +31,8 @@ function companiesTotal(count) {
 }
 
 function totalCard([key, label], t) {
-  const card = el('div', 'total');
+  const card = el('button', 'total');
+  card.type = 'button';
   card.append(el('span', 'muted small', label));
   const big = el('strong', null, `${t.done}`);
   big.append(el('span', 'muted small', ` of ${t.total} done`));
@@ -106,28 +108,29 @@ function marksPanel(host, type) {
   restart();
 }
 
-// The lower part of the page: a switch between the companies table and the marked questions of each kind.
-function viewCard(data) {
+// The lower part of the page: the list for whichever summary box is selected (pressed).
+function viewCard(data, cards) {
   const card = el('section', 'card');
-  const field = el('label', 'field', 'View');
-  const select = el('select', 'select');
-  for (const [value, text] of VIEWS) {
-    const option = el('option', null, text);
-    option.value = value;
-    select.append(option);
-  }
-  field.append(select);
+  const heading = el('h2');
   const panel = el('div', 'wrap');
+  card.append(heading, panel);
+  let current = null;
   const show = (key) => {
-    history.replaceState(null, '', `#${key}`);
+    if (key === current) return;
+    current = key;
+    history.replaceState(null, '', '#' + key);
+    for (const [name, button] of cards) {
+      const on = name === key;
+      button.classList.toggle('on', on);
+      button.setAttribute('aria-pressed', String(on));
+    }
+    heading.textContent = HEADINGS[key];
     if (key === 'companies') panel.replaceChildren(companiesCard(data.companies, data.partial === true, data.breakdownMarks));
     else marksPanel(panel, key);
   };
+  for (const [key, button] of cards) button.addEventListener('click', () => show(key));
   const wanted = location.hash.slice(1);
-  select.value = VIEWS.some(([key]) => key === wanted) ? wanted : 'companies';
-  select.addEventListener('change', () => show(select.value));
-  card.append(field, panel);
-  show(select.value);
+  show(cards.has(wanted) ? wanted : 'companies');
   return card;
 }
 
@@ -280,9 +283,10 @@ async function render() {
   }
   const totals = el('section', 'totals');
   totals.setAttribute('aria-label', 'Totals');
-  totals.append(companiesTotal(data.companies.length));
-  for (const entry of TOTALS) totals.append(totalCard(entry, data.totals[entry[0]]));
-  holder.replaceChildren(totals, viewCard(data), deletionCard(authState().user));
+  const cards = new Map([['companies', companiesTotal(data.companies.length)]]);
+  for (const entry of TOTALS) cards.set(entry[0], totalCard(entry, data.totals[entry[0]]));
+  totals.append(...cards.values());
+  holder.replaceChildren(totals, viewCard(data, cards), deletionCard(authState().user));
 }
 
 initTheme();
