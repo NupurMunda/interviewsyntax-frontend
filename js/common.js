@@ -121,15 +121,39 @@ export function showStatus(container, text, onRetry) {
   }
 }
 
-// The spinner is pure CSS (css/style.css, .loading): a ring with code symbols cycling inside. The visible words stay for screen readers.
+// Loading: each stage calls showLoading() where its content will go; that only leaves a screen-reader note there. One shared veil with
+// the spinner (pure CSS, css/style.css) stays on the page while ANY such note exists, so a page that loads in stages shows one
+// spinner from the first request to the last, not one per request. A short grace bridges the gap between stages.
 const LOADING_GLYPHS = ['{ }', '</>', '[ ]', '01', 'λ', '#'];
+let veil = null;
+let veilTimer = 0;
+function syncVeil() {
+  const active = document.querySelector('.loading');
+  clearTimeout(veilTimer);
+  if (active) {
+    if (!veil) {
+      veil = el('div', 'veil');
+      veil.setAttribute('aria-hidden', 'true');
+      const spin = el('span', 'spin');
+      for (const glyph of LOADING_GLYPHS) spin.append(el('span', null, glyph));
+      veil.append(spin, el('span', 'veil-text'));
+      document.body.append(veil);
+    }
+    // Only when it differs: setting it is itself a page change, which runs this function again.
+    if (veil.lastChild.textContent !== active.textContent) veil.lastChild.textContent = active.textContent;
+  } else if (veil) {
+    veilTimer = setTimeout(() => {
+      if (document.querySelector('.loading')) return;
+      veil.remove();
+      veil = null;
+    }, 120);
+  }
+}
+if (typeof MutationObserver === 'function' && document.body) new MutationObserver(syncVeil).observe(document.body, { childList: true, subtree: true });
+
 export function showLoading(container, text) {
-  const note = el('p', 'note loading');
+  const note = el('p', 'loading', text);
   note.setAttribute('role', 'status');
-  const spin = el('span', 'spin');
-  spin.setAttribute('aria-hidden', 'true');
-  for (const glyph of LOADING_GLYPHS) spin.append(el('span', null, glyph));
-  note.append(spin, el('span', 'loading-text', text));
   container.replaceChildren(note);
 }
 
