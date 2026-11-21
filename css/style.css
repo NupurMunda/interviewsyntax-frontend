@@ -162,3 +162,19 @@ pre { margin: 8px 0 0; padding: 12px; background: var(--bg); border-radius: 8px;
 .small { font-size: 12px; }
 .badge { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; }
 .qs li > .badge { align-self: flex-start; }
+
+/* Loading spinner: a ring with code symbols cycling inside it. Pure CSS (the site's CSP allows no inline styles). */
+.loading { display: flex; align-items: center; gap: 14px; border-style: solid; padding: 14px 16px; }
+.loading-text { font-family: var(--f-mono); letter-spacing: .02em; }
+.spin { position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center; font-family: var(--f-mono); font-weight: 700; font-size: 13px; color: var(--accent); }
+.spin::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); border-right-color: var(--accent); animation: spin-ring 1s linear infinite; }
+.spin > span { position: absolute; opacity: 0; animation: spin-glyph 4.8s infinite; }
+.spin > span:nth-child(1) { animation-delay: 0s; }
+.spin > span:nth-child(2) { animation-delay: .8s; }
+.spin > span:nth-child(3) { animation-delay: 1.6s; }
+.spin > span:nth-child(4) { animation-delay: 2.4s; }
+.spin > span:nth-child(5) { animation-delay: 3.2s; }
+.spin > span:nth-child(6) { animation-delay: 4s; }
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+@keyframes spin-glyph { 0% { opacity: 0; transform: scale(.7); } 4% { opacity: 1; transform: scale(1); } 14% { opacity: 1; transform: scale(1); } 17%, 100% { opacity: 0; transform: scale(.7); } }
+@media (prefers-reduced-motion: reduce) { .spin::before { animation: none; } .spin > span { animation: none; } .spin > span:first-child { opacity: 1; } }

@@ -1,4 +1,4 @@
-import { $, el, initTheme, showStatus } from './common.js?v=15';
+import { $, el, initTheme, showLoading, showStatus } from './common.js?v=15';
 import { announce, authState, googleButton, loadStyles, privateFetch, signInUrl, sync, whenAuth } from './account.js?v=15';
 
 const root = $('dashboard');
@@ -160,7 +160,7 @@ async function render() {
   }
   const holder = el('div', 'wrap');
   root.append(holder);
-  showStatus(holder, 'Loading…');
+  showLoading(holder, 'Loading…');
   let data;
   try {
     const response = await privateFetch('/me/dashboard');
