@@ -77,6 +77,16 @@ async function worker(req, res, path, body) {
   if (path === '/v1/me/companies' && req.method === 'GET') {
     return send(res, 200, { data: { items: mine('c').map(([k, r]) => ({ slug: k.split(':')[1], tracked: r.value, rev: r.rev })) } });
   }
+  if (path === '/v1/me/marks' && req.method === 'GET') {
+    const q = new URL(req.url, 'http://x').searchParams;
+    const type = q.get('type');
+    const titles = { ai: Object.fromEntries(QUESTIONS.map((x) => [x.id, x.title])), company_dsa: { 201: 'Two Sum', 202: 'Valid Parentheses' }, system_design: { 301: 'Design a URL shortener' } };
+    const items = mine('p').filter(([k, r]) => k.startsWith('p:' + type + ':') && (q.get('status') === 'all' || r.value === q.get('status'))).map(([k, r]) => {
+      const id = Number(k.split(':')[2]);
+      return { type, id, title: titles[type]?.[id] ?? 'Question ' + id, status: r.value, updatedAt: 1, url: type === 'company_dsa' ? 'https://example.com/q' + id : null, page: type === 'company_dsa' ? null : '/q/' + id };
+    });
+    return send(res, 200, { data: { type, status: q.get('status'), page: 1, items, hasMore: false } });
+  }
   if (path === '/v1/me/dashboard') {
     const done = (type) => mine('p').filter(([k, r]) => k.startsWith(`p:${type}:`) && r.value === 'done').length;
     const revisit = (type) => mine('p').filter(([k, r]) => k.startsWith(`p:${type}:`) && r.value === 'revisit').length;

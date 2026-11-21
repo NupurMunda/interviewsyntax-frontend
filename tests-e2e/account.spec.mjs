@@ -378,6 +378,37 @@ test.describe('dashboard', () => {
     expect(await noHorizontalScroll(page)).toBe(true);
   });
 
+  test('four summary boxes, Companies by default, and a View menu that lists the marked questions of each kind', async ({ page, context, request }) => {
+    await signIn(context, request);
+    await control(request, 'row', { ref: 'ref-ada', key: 'p:ai:101', value: 'done', rev: 1 });
+    await control(request, 'row', { ref: 'ref-ada', key: 'p:ai:102', value: 'revisit', rev: 1 });
+    await control(request, 'row', { ref: 'ref-ada', key: 'p:company_dsa:201', value: 'done', rev: 1 });
+    await control(request, 'row', { ref: 'ref-ada', key: 'c:acme', value: true, rev: 1 });
+    await page.goto(`${ON}/dashboard`);
+    const totals = page.getByLabel('Totals');
+    await expect(totals).toContainText('Companies you follow');
+    await expect(totals).toContainText('tracked company');
+    await expect(totals).toContainText('Company coding problems');
+    await expect(totals).toContainText('AI questions');
+    await expect(totals).toContainText('System design questions');
+    const view = page.getByRole('combobox', { name: /^View/ });
+    await expect(view).toHaveValue('companies');
+    await expect(page.getByRole('link', { name: 'Acme' })).toBeVisible();
+
+    await view.selectOption('ai');
+    await expect(page.getByRole('link', { name: 'How does attention work?' })).toHaveAttribute('href', '/q/101');
+    await expect(page.getByRole('link', { name: 'What is KV caching?' })).toBeVisible();
+    await page.getByRole('combobox', { name: /^Show/ }).selectOption('revisit');
+    await expect(page.getByRole('link', { name: 'What is KV caching?' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'How does attention work?' })).toHaveCount(0);
+
+    await view.selectOption('company_dsa');
+    await expect(page.getByRole('link', { name: 'Two Sum' })).toHaveAttribute('href', 'https://example.com/q201');
+    await view.selectOption('system_design');
+    await expect(page.getByText('You have not marked any system design questions yet')).toBeVisible();
+    expect(await noHorizontalScroll(page)).toBe(true);
+  });
+
   test('a failing dashboard offers a retry and says progress is safe', async ({ page, context, request }) => {
     await signIn(context, request);
     await control(request, 'config', { dataStatus: 503 });
