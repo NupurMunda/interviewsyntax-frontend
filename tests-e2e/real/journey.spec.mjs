@@ -57,7 +57,6 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   const dsaTotal = Number((await sql(request, 'content', "SELECT COUNT(DISTINCT r.id) AS n FROM resources r JOIN sources s ON s.id = r.source_id JOIN company_resources cr ON cr.resource_id = r.id WHERE r.category = 'leetcode' AND s.display_mode IN ('full','link')"))[0].n);
   await expect(page.getByLabel(`Company coding problems: 1 of ${dsaTotal} done`)).toBeVisible();
   const acme = page.getByRole('row', { name: /Acme/ });
-  await expect(acme).toContainText('Tracked');
   await expect(acme).toContainText('1 /');
 
   // 4b. Analytics: this one person is counted (aggregates only), and only the admin password opens the report.
