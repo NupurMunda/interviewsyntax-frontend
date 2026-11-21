@@ -38,7 +38,7 @@ test('the functions answer exactly the paths the site relies on', async () => {
 
 const PAGES = new Set(['index.html', 'company.html', 'prep.html', 'question.html', 'sources.html', 'privacy.html', 'dashboard.html', '404.html', 'css', 'img', 'js']);
 // Google Search Console proves ownership with one public file at the root (google<16 hex>.html). It is the only other file meant to be served.
-const OWNERSHIP_FILE = /^google[0-9a-f]{16}.html$/;
+const OWNERSHIP_FILE = /^google[0-9a-f]{16}\.html$/;
 
 test('everything at the top of the repository that is not a page or an asset folder is blocked with a 404', () => {
   const unblocked = readdirSync(root).filter((name) => !PAGES.has(name) && !OWNERSHIP_FILE.test(name)).filter((name) => {
