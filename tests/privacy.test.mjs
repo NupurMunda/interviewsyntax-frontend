@@ -4,17 +4,17 @@ import { describe, it } from 'node:test';
 
 const page = readFileSync(new URL('../privacy.html', import.meta.url), 'utf8');
 
-// Sign-in must stay off until the owner supplies a real contact address (operator-assisted deletion depends on it).
-// This test documents the current state: a clearly marked placeholder and no address of any kind. When the owner provides
-// the address, replace the placeholder, delete the first test and add one that checks the address is present.
+// Operator-assisted deletion depends on a real contact address, so the page carries the one the owner supplied and nothing else.
 describe('privacy page contact address', () => {
-  it('has a clearly marked placeholder, and the page is not ready for sign-in to be switched on', () => {
-    assert.match(page, /data-contact-placeholder>\[PLACEHOLDER:/);
+  it('shows the owner-supplied contact address, with no placeholder left', () => {
+    assert.doesNotMatch(page, /data-contact-placeholder|PLACEHOLDER/);
+    assert.match(page, /<a href="mailto:nupurmunda66@gmail\.com">nupurmunda66@gmail\.com<\/a>/);
   });
 
-  it('contains no invented email address or mailto link', () => {
-    assert.doesNotMatch(page, /mailto:/i);
-    assert.doesNotMatch(page, /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}/);
+  it('contains no other email address or mailto link', () => {
+    const addresses = page.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) ?? [];
+    assert.deepEqual([...new Set(addresses)], ['nupurmunda66@gmail.com']);
+    assert.equal((page.match(/mailto:/gi) ?? []).length, 1);
   });
 
   it('states the actual session record lifecycle rather than promising prompt removal', () => {
