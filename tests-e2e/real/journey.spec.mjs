@@ -66,7 +66,8 @@ test('the complete journey: browse, sign in with the local Google, track, mark, 
   const body = await (await request.get(report, { headers: { authorization: `Basic ${Buffer.from('founder:e2e-admin-password').toString('base64')}` } })).json();
   expect(body.metrics.registrations).toMatchObject({ total: 1, currentAccounts: 1, today: 1 });
   expect(body.metrics.active).toMatchObject({ dauToday: 1, wau: 1, mau: 1 });
-  expect(body.metrics.usage.last7).toMatchObject({ markedDone: 2, markedRevisit: 2, companiesTracked: 1, dashboardUsers: 1 });
+  // Events, not questions: reaching Revisit goes through Done (none -> done -> revisit), so each Revisit mark also counted one Done.
+  expect(body.metrics.usage.last7).toMatchObject({ markedDone: 4, markedRevisit: 2, companiesTracked: 1, dashboardUsers: 1 });
   expect(body.metrics.usage.last7.dashboardOpens).toBeGreaterThanOrEqual(1);
   expect(JSON.stringify(body)).not.toMatch(/ada@example|Ada Lovelace|ref-|@/);
 
