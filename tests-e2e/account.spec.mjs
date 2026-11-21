@@ -378,7 +378,7 @@ test.describe('dashboard', () => {
     expect(await noHorizontalScroll(page)).toBe(true);
   });
 
-  test('four summary boxes, Companies by default, and a View menu that lists the marked questions of each kind', async ({ page, context, request }) => {
+  test('the four summary boxes are the switch: Companies by default, click a box to list its marked questions', async ({ page, context, request }) => {
     await signIn(context, request);
     await control(request, 'row', { ref: 'ref-ada', key: 'p:ai:101', value: 'done', rev: 1 });
     await control(request, 'row', { ref: 'ref-ada', key: 'p:ai:102', value: 'revisit', rev: 1 });
@@ -391,20 +391,25 @@ test.describe('dashboard', () => {
     await expect(totals).toContainText('Company coding problems');
     await expect(totals).toContainText('AI questions');
     await expect(totals).toContainText('System design questions');
-    const view = page.getByRole('combobox', { name: /^View/ });
-    await expect(view).toHaveValue('companies');
+    const box = (name) => page.getByRole('button', { name: new RegExp('^' + name) });
+    await expect(box('Companies you follow')).toHaveAttribute('aria-pressed', 'true');
+    await expect(box('AI questions')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByRole('combobox', { name: /^View/ })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Acme' })).toBeVisible();
 
-    await view.selectOption('ai');
+    await box('AI questions').click();
+    await expect(box('AI questions')).toHaveAttribute('aria-pressed', 'true');
+    await expect(box('Companies you follow')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByRole('heading', { name: 'AI questions you marked' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'How does attention work?' })).toHaveAttribute('href', '/q/101');
     await expect(page.getByRole('link', { name: 'What is KV caching?' })).toBeVisible();
     await page.getByRole('combobox', { name: /^Show/ }).selectOption('revisit');
     await expect(page.getByRole('link', { name: 'What is KV caching?' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'How does attention work?' })).toHaveCount(0);
 
-    await view.selectOption('company_dsa');
+    await box('Company coding problems').click();
     await expect(page.getByRole('link', { name: 'Two Sum' })).toHaveAttribute('href', 'https://example.com/q201');
-    await view.selectOption('system_design');
+    await box('System design questions').click();
     await expect(page.getByText('You have not marked any system design questions yet')).toBeVisible();
     expect(await noHorizontalScroll(page)).toBe(true);
   });
