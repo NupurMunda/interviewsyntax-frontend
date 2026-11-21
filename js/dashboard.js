@@ -22,9 +22,11 @@ function totalCard([key, label], t) {
   return card;
 }
 
-function companiesCard(companies) {
+// partial: the account has more marks than the breakdown covers, so the table counts the most recent ones (the totals above count every mark).
+function companiesCard(companies, partial, breakdownMarks) {
   const card = el('section', 'card');
   card.append(el('h2', null, 'Companies you follow'));
+  if (partial) card.append(el('p', 'muted', `Company counts below use your ${Number(breakdownMarks) || 500} most recent marks. The totals above count all of them.`));
   if (!companies.length) {
     card.append(el('p', 'muted', 'No companies yet. Open a company and choose “Track company”, or mark a question and its companies appear here.'));
     return card;
@@ -172,7 +174,7 @@ async function render() {
   const totals = el('section', 'totals');
   totals.setAttribute('aria-label', 'Totals');
   for (const entry of TOTALS) totals.append(totalCard(entry, data.totals[entry[0]]));
-  holder.replaceChildren(totals, companiesCard(data.companies), deletionCard(authState().user));
+  holder.replaceChildren(totals, companiesCard(data.companies, data.partial === true, data.breakdownMarks), deletionCard(authState().user));
 }
 
 initTheme();
