@@ -13,6 +13,10 @@ const get = async (base, path) => fetch(new URL(path, base), { redirect: 'manual
 const text = (r) => r.clone().text();
 const isJson = (r) => (r.headers.get('content-type') ?? '').includes('application/json');
 const hasAll = (value, ...needles) => needles.every((n) => (value ?? '').toLowerCase().includes(n));
+// Netlify removes Netlify-CDN-Cache-Control from the response a visitor sees (it is an instruction to the CDN), but reports what the
+// cache did in Cache-Status: a durable-cache entry that was stored or hit means the response was held, "bypass" means it was not.
+const heldByCdn = (r) => hasAll(r.headers.get('netlify-cdn-cache-control'), 's-maxage') || /netlify durable"?;\s*(hit|fwd=miss[^,]*stored)/i.test(r.headers.get('cache-status') ?? '') || /stored|hit/i.test(r.headers.get('cache-status') ?? '');
+const neverHeldByCdn = (r) => hasAll(r.headers.get('netlify-cdn-cache-control'), 'no-store') || (/fwd=bypass/i.test(r.headers.get('cache-status') ?? '') && !/stored|;\s*hit/i.test(r.headers.get('cache-status') ?? ''));
 
 export async function verify(base, { startSignIn = false } = {}) {
   const results = [];
@@ -35,9 +39,8 @@ export async function verify(base, { startSignIn = false } = {}) {
 
   // --- the public API: still cached by the CDN, still public ---
   const api = await get(base, '/api/v1/health');
-  const apiCdn = api.headers.get('netlify-cdn-cache-control');
   check(api.status === 200 && isJson(api), 'public API answers', `status ${api.status}`);
-  check(hasAll(apiCdn, 's-maxage'), 'public API responses keep their CDN cache headers', String(apiCdn));
+  check(heldByCdn(api), 'public API responses keep their CDN cache headers', `netlify-cdn-cache-control ${api.headers.get('netlify-cdn-cache-control')}; cache-status ${api.headers.get('cache-status')}`);
   check(!api.headers.get('set-cookie'), 'public API never sets a cookie', String(api.headers.get('set-cookie')));
 
   // --- private routes: the function must answer, not a page, not a redirect ---
@@ -53,7 +56,7 @@ export async function verify(base, { startSignIn = false } = {}) {
   }
   if (featureOn !== null) {
     check(hasAll(me.headers.get('cache-control'), 'no-store'), 'private responses are Cache-Control: no-store', String(me.headers.get('cache-control')));
-    check(hasAll(me.headers.get('netlify-cdn-cache-control'), 'no-store'), 'private responses are never held by the CDN', String(me.headers.get('netlify-cdn-cache-control')));
+    check(neverHeldByCdn(me), 'private responses are never held by the CDN', `netlify-cdn-cache-control ${me.headers.get('netlify-cdn-cache-control')}; cache-status ${me.headers.get('cache-status')}`);
     check(hasAll(me.headers.get('vary'), 'cookie'), 'private responses vary on Cookie', String(me.headers.get('vary')));
     check(!me.headers.get('set-cookie'), '/me with no cookie sets nothing', String(me.headers.get('set-cookie')));
   }

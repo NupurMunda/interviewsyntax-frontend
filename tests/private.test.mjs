@@ -363,7 +363,7 @@ describe('regression: the public API and public browsing are unchanged', () => {
     const res = await get('/api/v1/companies/acme/dsa');
     assert.equal(res.status, 200);
     assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
-    assert.equal(res.headers.get('netlify-cdn-cache-control'), 'public, durable, s-maxage=300, stale-while-revalidate=600');
+    assert.equal(res.headers.get('netlify-cdn-cache-control'), 'public, durable, s-maxage=3600, stale-while-revalidate=86400');
     assert.equal(res.headers.get('set-cookie'), null);
     assert.equal(res.headers.get('vary'), null);
   });

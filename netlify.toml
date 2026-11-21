@@ -1,6 +1,12 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  # The site is static files, so this is only a gate: the unit tests (no dependencies, about a second) must pass before a deploy is
+  # published. If one fails the build fails and the previous deploy stays live. It writes nothing into the published folder.
+  command = "node --test"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 [[redirects]]
   from = "/c/*"

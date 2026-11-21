@@ -186,11 +186,23 @@ describe('responses', () => {
   it('sets cache headers on 200 only', async () => {
     const ok = await get('/api/v1/companies');
     assert.equal(ok.headers.get('Cache-Control'), 'public, max-age=300');
-    assert.equal(ok.headers.get('Netlify-CDN-Cache-Control'), 'public, durable, s-maxage=300, stale-while-revalidate=600');
+    assert.equal(ok.headers.get('Netlify-CDN-Cache-Control'), 'public, durable, s-maxage=3600, stale-while-revalidate=86400');
     reply = () => Response.json({ error: { code: 'bad_request', message: 'x' } }, { status: 400 });
     const bad = await get('/api/v1/companies?page=0');
     assert.equal(bad.status, 400);
     assert.equal(bad.headers.get('Netlify-CDN-Cache-Control'), null);
+  });
+
+  it('keeps content that changes only on rebuild for an hour, and prep lists (new answers arrive in batches) for 5 minutes', async () => {
+    const hour = 'public, durable, s-maxage=3600, stale-while-revalidate=86400';
+    const short = 'public, durable, s-maxage=300, stale-while-revalidate=600';
+    for (const path of ['/api/v1/companies', '/api/v1/companies?q=go&limit=24', '/api/v1/companies/acme', '/api/v1/companies/acme/dsa?time_window=all', '/api/v1/companies/acme/hld', '/api/v1/companies/acme/ai', '/api/v1/companies/acme/behavioral', '/api/v1/graph?limit=40', '/api/v1/resources/12', '/api/v1/sources']) {
+      assert.equal((await get(path)).headers.get('Netlify-CDN-Cache-Control'), hour, path);
+    }
+    for (const path of ['/api/v1/prep/ai', '/api/v1/prep/ai?topic=Agents', '/api/v1/prep/system-design?company=acme', '/api/v1/health']) {
+      assert.equal((await get(path)).headers.get('Netlify-CDN-Cache-Control'), short, path);
+    }
+    assert.equal((await get('/api/v1/ping?kind=view&page=home')).headers.get('Netlify-CDN-Cache-Control'), null);
   });
 
   it('passes Retry-After through on 429', async () => {
